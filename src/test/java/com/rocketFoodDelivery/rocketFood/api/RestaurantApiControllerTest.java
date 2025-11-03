@@ -18,8 +18,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rocketFoodDelivery.rocketFood.controller.api.RestaurantApiController;
-import com.rocketFoodDelivery.rocketFood.dtos.ApiAddressDto;
-import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateRestaurantDto;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiAddressDTO;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateRestaurantDTO;
 import com.rocketFoodDelivery.rocketFood.repository.UserRepository;
 import com.rocketFoodDelivery.rocketFood.service.RestaurantService;
 
@@ -41,8 +41,8 @@ public class RestaurantApiControllerTest {
 
     @Test
     public void testCreateRestaurant_Success() throws Exception {
-        ApiAddressDto inputAddress = new ApiAddressDto(1, "123 Wellington St.", "Montreal", "H1H2H2");
-        ApiCreateRestaurantDto inputRestaurant = new ApiCreateRestaurantDto(1, 4, "Villa wellington", 2, "5144154415", "reservations@villawellington.com", inputAddress);
+        ApiAddressDTO inputAddress = new ApiAddressDTO(1, "123 Wellington St.", "Montreal", "H1H2H2");
+        ApiCreateRestaurantDTO inputRestaurant = new ApiCreateRestaurantDTO(1, 4, "Villa wellington", 2, "5144154415", "reservations@villawellington.com", inputAddress);
 
         // Mock service behavior
         when(restaurantService.createRestaurant(any())).thenReturn(Optional.of(inputRestaurant));
@@ -69,7 +69,7 @@ public class RestaurantApiControllerTest {
     public void testUpdateRestaurant_Success() throws Exception {
         // Mock data
         int restaurantId = 1;
-        ApiCreateRestaurantDto updatedData = new ApiCreateRestaurantDto();
+        ApiCreateRestaurantDTO updatedData = new ApiCreateRestaurantDTO();
         updatedData.setName("Updated Name");
         updatedData.setPriceRange(2);
         updatedData.setPhone("555-1234");

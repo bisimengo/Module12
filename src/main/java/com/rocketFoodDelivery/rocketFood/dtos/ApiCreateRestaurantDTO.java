@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApiCreateRestaurantDto {
+public class ApiCreateRestaurantDTO {
     private int id;
 
     @JsonProperty("user_id")
@@ -33,5 +33,5 @@ public class ApiCreateRestaurantDto {
     @Email
     private String email;
 
-    private ApiAddressDto address;
+    private ApiAddressDTO address;
 }

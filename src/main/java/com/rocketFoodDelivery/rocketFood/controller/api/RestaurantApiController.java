@@ -1,7 +1,7 @@
 package com.rocketFoodDelivery.rocketFood.controller.api;
 
-import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateRestaurantDto;
-import com.rocketFoodDelivery.rocketFood.dtos.ApiRestaurantDto;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateRestaurantDTO;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiRestaurantDTO;
 import com.rocketFoodDelivery.rocketFood.service.RestaurantService;
 import com.rocketFoodDelivery.rocketFood.util.ResponseBuilder;
 import com.rocketFoodDelivery.rocketFood.exception.*;
@@ -33,7 +33,7 @@ public class RestaurantApiController {
      * @return ResponseEntity with the created restaurant's data, or a BadRequestException if creation fails.
      */
     @PostMapping("/api/restaurants")
-    public ResponseEntity<Object> createRestaurant(@RequestBody ApiCreateRestaurantDto restaurant) {
+    public ResponseEntity<Object> createRestaurant(@RequestBody ApiCreateRestaurantDTO restaurant) {
         return null; // TODO return proper object
     }
     
@@ -61,7 +61,7 @@ public class RestaurantApiController {
      * @return ResponseEntity with the updated restaurant's data
      */
     @PutMapping("/api/restaurants/{id}")
-    public ResponseEntity<Object> updateRestaurant(@PathVariable("id") int id, @Valid @RequestBody ApiCreateRestaurantDto restaurantUpdateData, BindingResult result) {
+    public ResponseEntity<Object> updateRestaurant(@PathVariable("id") int id, @Valid @RequestBody ApiCreateRestaurantDTO restaurantUpdateData, BindingResult result) {
         return null; // TODO return proper object
     }
 
@@ -75,7 +75,7 @@ public class RestaurantApiController {
      */
     @GetMapping("/api/restaurants/{id}")
     public ResponseEntity<Object> getRestaurantById(@PathVariable int id) {
-        Optional<ApiRestaurantDto> restaurantWithRatingOptional = restaurantService.findRestaurantWithAverageRatingById(id);
+        Optional<ApiRestaurantDTO> restaurantWithRatingOptional = restaurantService.findRestaurantWithAverageRatingById(id);
         if (!restaurantWithRatingOptional.isPresent()) throw new ResourceNotFoundException(String.format("Restaurant with id %d not found", id));
         return ResponseBuilder.buildOkResponse(restaurantWithRatingOptional.get());
     }
