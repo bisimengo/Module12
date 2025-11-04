@@ -89,8 +89,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
         """)
     Optional<Restaurant> findRestaurantById(@Param("restaurantId") int restaurantId);
 
-    @Query(nativeQuery = true, value = "SELECT LAST_INSERT_ID() AS id")
-    int getLastInsertedId();
+    // @Query(nativeQuery = true, value = "SELECT LAST_INSERT_ID() AS id")
+    // int getLastInsertedId();
 
     // TODO
     //The native SQL query for the DELETE /api/restaurants/{id} route
