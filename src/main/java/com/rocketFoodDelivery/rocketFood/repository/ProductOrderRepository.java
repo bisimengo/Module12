@@ -15,9 +15,13 @@ import java.util.Optional;
 public interface ProductOrderRepository extends JpaRepository<ProductOrder, Integer> {
 
     // TODO
+    //The native SQL query for the DELETE /api/product_orders?order={id} route
     @Modifying
     @Transactional
-    @Query(nativeQuery = true, value = "DELETE FROM product_orders WHERE order_id = :orderId")
+    @Query(nativeQuery = true, value =
+    """
+    DELETE FROM product_orders WHERE order_id = :orderId
+    """)
     void deleteProductOrdersByOrderId(@Param("orderId") int orderId);
 
     Optional<ProductOrder> findById(int id);
