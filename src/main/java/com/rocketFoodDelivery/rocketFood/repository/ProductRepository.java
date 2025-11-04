@@ -19,12 +19,30 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findByRestaurantId(int restaurantId);
 
     // TODO
-    @Query(nativeQuery = true, value = "TODO Write SQL query here")
+    //The native SQL query for the GET /api/products?restaurant={id} route 
+    @Query(nativeQuery = true, value =
+    """
+    SELECT * FROM products WHERE restaurant_id = :restaurantId
+    """)
     List<Product> findProductsByRestaurantId(@Param("restaurantId") int restaurantId);
 
     // TODO
+    //The native SQL query for the DELETE /api/products?restaurant={id} route
     @Modifying
     @Transactional
-    @Query(nativeQuery = true, value = "TODO Write SQL query here")
+    @Query(nativeQuery = true, value =
+    """
+    DELETE FROM products WHERE restaurant_id = :restaurantId
+    """)
     void deleteProductsByRestaurantId(@Param("restaurantId") int restaurantId);
+
+     // TODO
+    //The native SQL query for the POST /api/products?restaurant={id} route
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value =
+    """
+    INSERT INTO products (name, description, cost, restaurant_id) VALUES (:name, :description, :cost, :restaurantId)
+    """)
+    void addProduct(@Param("name") String name, @Param("description") String description, @Param("cost") double cost, @Param("restaurantId") int restaurantId);
 }
