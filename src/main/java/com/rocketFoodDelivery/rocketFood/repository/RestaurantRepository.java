@@ -25,11 +25,13 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
      *         An empty list is returned if no restaurant is found with the specified ID.
      */
     @Query(nativeQuery = true, value =
-        "SELECT r.id, r.name, r.price_range, COALESCE(CEIL(SUM(o.restaurant_rating) / NULLIF(COUNT(o.id), 0)), 0) AS rating " +
-        "FROM restaurants r " +
-        "LEFT JOIN orders o ON r.id = o.restaurant_id " +
-        "WHERE r.id = :restaurantId " +
-        "GROUP BY r.id")
+        """
+        SELECT r.id, r.name, r.price_range, COALESCE(CEIL(SUM(o.restaurant_rating) / NULLIF(COUNT(o.id), 0)), 0) AS rating 
+        FROM restaurants r 
+        LEFT JOIN orders o ON r.id = o.restaurant_id 
+        WHERE r.id = :restaurantId 
+        GROUP BY r.id
+        """)
     List<Object[]> findRestaurantWithAverageRatingById(@Param("restaurantId") int restaurantId);
     
     /**
@@ -45,14 +47,16 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
      *         An empty list is returned if no restaurant is found with the specified ID.
      */
     @Query(nativeQuery = true, value =
-        "SELECT * FROM (" +
-        "   SELECT r.id, r.name, r.price_range, COALESCE(CEIL(SUM(o.restaurant_rating) / NULLIF(COUNT(o.id), 0)), 0) AS rating " +
-        "   FROM restaurants r " +
-        "   LEFT JOIN orders o ON r.id = o.restaurant_id " +
-        "   WHERE (:priceRange IS NULL OR r.price_range = :priceRange) " +
-        "   GROUP BY r.id" +
-        ") AS result " +
-        "WHERE (:rating IS NULL OR result.rating = :rating)")
+        """
+        SELECT * FROM (
+           SELECT r.id, r.name, r.price_range, COALESCE(CEIL(SUM(o.restaurant_rating) / NULLIF(COUNT(o.id), 0)), 0) AS rating
+            FROM restaurants r
+           LEFT JOIN orders o ON r.id = o.restaurant_id
+           WHERE (:priceRange IS NULL OR r.price_range = :priceRange)
+           GROUP BY r.id
+        ) AS result
+        WHERE (:rating IS NULL OR result.rating = :rating)
+        """)
     List<Object[]> findRestaurantsByRatingAndPriceRange(@Param("rating") Integer rating, @Param("priceRange") Integer priceRange);
 
 

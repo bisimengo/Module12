@@ -16,12 +16,16 @@ public interface AddressRepository extends JpaRepository<Address, Integer> {
 
     List<Address> findAllByOrderByIdDesc();
     
-    // TODO
+    // TODO 
+    //The native SQL query for the POST /api/address route 
     @Modifying
     @Transactional
     @Query(nativeQuery = true, value =
-        "TODO Write SQL query here")
-    void saveAddress(String streetAddress, String city, String postalCode);
+        """
+        INSERT INTO addresses (street_address, city, postal_code)
+        VALUES (:streetAddress, :city, :postalCode)
+        """)
+    void saveAddress(@Param("streetAddress") String streetAddress, @Param("city") String city, @Param("postalCode") String postalCode);
     
     @Query(nativeQuery = true, value = "SELECT LAST_INSERT_ID() AS id")
     int getLastInsertedId();
