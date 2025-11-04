@@ -4,6 +4,7 @@ import com.rocketFoodDelivery.rocketFood.models.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,10 +12,10 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository <UserEntity, Integer> {
 
     //The native SQL query for the GET /api/user/{id} route
-    @Query(nativeQuery = true, value = 
-    "SELECT * FROM users WHERE id = :id
-    ")
-    Optional<UserEntity> findById(int id);
+    @Query(nativeQuery = true, value = """
+    SELECT * FROM users WHERE id = :id
+    """)
+    Optional<UserEntity> findById(@Param("id") int id);
     
     List<UserEntity> findAllByOrderByIdDesc();
     Optional<UserEntity> findByEmail(String email);

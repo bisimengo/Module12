@@ -2,11 +2,21 @@ package com.rocketFoodDelivery.rocketFood.service;
 
 import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateRestaurantDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiRestaurantDTO;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiAddressDTO;  // Add this import
 import com.rocketFoodDelivery.rocketFood.models.Restaurant;
 import com.rocketFoodDelivery.rocketFood.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.rocketFoodDelivery.rocketFood.models.Order;
+import com.rocketFoodDelivery.rocketFood.repository.RestaurantRepository;
+import com.rocketFoodDelivery.rocketFood.repository.ProductRepository;
+import com.rocketFoodDelivery.rocketFood.repository.OrderRepository;
+import com.rocketFoodDelivery.rocketFood.repository.ProductOrderRepository;
+import com.rocketFoodDelivery.rocketFood.repository.UserRepository;
+import org.springframework.data.repository.query.Param;
+
+
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -24,6 +34,7 @@ public class RestaurantService {
     private final ProductOrderRepository productOrderRepository;
     private final UserRepository userRepository;
     private final AddressService addressService;
+    private final AddressRepository addressRepository;  // Add this field
 
     @Autowired
     public RestaurantService(
@@ -32,7 +43,8 @@ public class RestaurantService {
         OrderRepository orderRepository,
         ProductOrderRepository productOrderRepository,
         UserRepository userRepository,
-        AddressService addressService
+        AddressService addressService,
+        AddressRepository addressRepository  // Add this parameter
         ) {
         this.restaurantRepository = restaurantRepository;
         this.productRepository = productRepository;
@@ -40,6 +52,7 @@ public class RestaurantService {
         this.productOrderRepository = productOrderRepository;
         this.userRepository = userRepository;
         this.addressService = addressService;
+        this.addressRepository = addressRepository;  // Add this
     }
 
     public List<Restaurant> findAllRestaurants() {
@@ -114,15 +127,22 @@ public class RestaurantService {
                 return Optional.empty();
             }
 
-            // 2. Create the address using AddressService
-            Long addressId = addressService.createAddress(restaurant.getAddress());
+            // 2. Create the address using AddressRepository directly
+            addressRepository.saveAddress(
+                restaurant.getAddress().getStreetAddress(),
+                restaurant.getAddress().getCity(),
+                restaurant.getAddress().getPostalCode()
+            );
+            
+            // Get the last inserted address ID
+            Long addressId = (long) addressRepository.getLastInsertedId();
             if (addressId == null) {
                 return Optional.empty();
             }
 
             // 3. Save the restaurant using the repository
             restaurantRepository.saveRestaurant(
-                (long) restaurant.getUserId(),  // Cast if getUserId() returns int
+                (long) restaurant.getUserId(),
                 addressId,
                 restaurant.getName(),
                 restaurant.getPriceRange(),
@@ -133,19 +153,25 @@ public class RestaurantService {
             // 4. Get the last inserted ID
             int newRestaurantId = restaurantRepository.getLastInsertedId();
 
-            // 5. Return the created restaurant data
+            // 5. Return the created restaurant data - create a new ApiAddressDTO for return
+            ApiAddressDTO returnAddress = new ApiAddressDTO(
+                (int) addressId.longValue(),
+                restaurant.getAddress().getStreetAddress(),
+                restaurant.getAddress().getCity(),
+                restaurant.getAddress().getPostalCode()
+            );
+
             return Optional.of(new ApiCreateRestaurantDTO(
                 newRestaurantId,
                 restaurant.getUserId(),
-                restaurant.getAddress(),
-                restaurant.getName(),
+                restaurant.getName(),           // Add this line
                 restaurant.getPriceRange(),
                 restaurant.getPhone(),
-                restaurant.getEmail()
+                restaurant.getEmail(),
+                returnAddress                   // Move this to the end and uncomment
             ));
 
         } catch (Exception e) {
-            // Log the specific error for debugging
             System.err.println("Error creating restaurant: " + e.getMessage());
             e.printStackTrace();
             return Optional.empty();
@@ -201,11 +227,11 @@ public class RestaurantService {
                 return Optional.of(new ApiCreateRestaurantDTO(
                     restaurant.getId(),
                     restaurant.getUserEntity().getId(),
-                    null, // Address is not updated in PUT operation
-                    restaurant.getName(),
+                    restaurant.getName(),           // Uncomment this line
                     restaurant.getPriceRange(),
                     restaurant.getPhone(),
-                    restaurant.getEmail()
+                    restaurant.getEmail(),
+                    null                           // Add this as the last parameter
                 ));
             }
 
