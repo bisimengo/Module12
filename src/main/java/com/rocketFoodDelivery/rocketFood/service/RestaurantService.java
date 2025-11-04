@@ -47,7 +47,7 @@ public class RestaurantService {
     }
 
     /**
-     * Retrieves a restaurant with its details, including the average rating, based on the provided restaurant ID.
+     * Retrieves (GET) a restaurant with its details, including the average rating, based on the provided restaurant ID.
      *
      * @param id The unique identifier of the restaurant to retrieve.
      * @return An Optional containing a RestaurantDTO with details such as id, name, price range, and average rating.
@@ -73,7 +73,7 @@ public class RestaurantService {
     }
 
     /**
-     * Finds restaurants based on the provided rating and price range.
+     * Finds (GET) restaurants based on the provided rating and price range.
      *
      * @param rating     The rating for filtering the restaurants.
      * @param priceRange The price range for filtering the restaurants.
@@ -100,7 +100,7 @@ public class RestaurantService {
     // TODO
 
     /**
-     * Creates a new restaurant and returns its information.
+     * Creates(POST) a new restaurant and returns its information.
      *
      * @param restaurant The data for the new restaurant.
      * @return An Optional containing the created restaurant's information as an ApiCreateRestaurantDto,
@@ -108,26 +108,67 @@ public class RestaurantService {
      */
     @Transactional
     public Optional<ApiCreateRestaurantDTO> createRestaurant(ApiCreateRestaurantDTO restaurant) {
-        return null; // TODO return proper object
+        try {
+            // 1. Validate that the user exists
+            if (!userRepository.existsById(restaurant.getUserId())) {
+                return Optional.empty();
+            }
+
+            // 2. Create the address using AddressService
+            Long addressId = addressService.createAddress(restaurant.getAddress());
+            if (addressId == null) {
+                return Optional.empty();
+            }
+
+            // 3. Save the restaurant using the repository
+            restaurantRepository.saveRestaurant(
+                (long) restaurant.getUserId(),  // Cast if getUserId() returns int
+                addressId,
+                restaurant.getName(),
+                restaurant.getPriceRange(),
+                restaurant.getPhone(),
+                restaurant.getEmail()
+            );
+
+            // 4. Get the last inserted ID
+            int newRestaurantId = restaurantRepository.getLastInsertedId();
+
+            // 5. Return the created restaurant data
+            return Optional.of(new ApiCreateRestaurantDTO(
+                newRestaurantId,
+                restaurant.getUserId(),
+                restaurant.getAddress(),
+                restaurant.getName(),
+                restaurant.getPriceRange(),
+                restaurant.getPhone(),
+                restaurant.getEmail()
+            ));
+
+        } catch (Exception e) {
+            // Log the specific error for debugging
+            System.err.println("Error creating restaurant: " + e.getMessage());
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 
     // TODO
 
     /**
-     * Finds a restaurant by its ID.
+     * Finds (GET) a restaurant by its ID.
      *
      * @param id The ID of the restaurant to retrieve.
      * @return An Optional containing the restaurant with the specified ID,
      *         or Optional.empty() if no restaurant is found.
      */
     public Optional<Restaurant> findById(int id) {
-        return null; // TODO return proper object
+        return restaurantRepository.findRestaurantById(id);
     }
 
     // TODO
 
     /**
-     * Updates an existing restaurant by ID with the provided data.
+     * Updates (PUT) an existing restaurant by ID with the provided data.
      *
      * @param id                  The ID of the restaurant to update.
      * @param updatedRestaurantDTO The updated data for the restaurant.
@@ -136,18 +177,82 @@ public class RestaurantService {
      */
     @Transactional
     public Optional<ApiCreateRestaurantDTO> updateRestaurant(int id, ApiCreateRestaurantDTO updatedRestaurantDTO) {
-        return null; // TODO return proper object
+        try {
+            // 1. Check if restaurant exists
+            Optional<Restaurant> existingRestaurant = restaurantRepository.findRestaurantById(id);
+            if (existingRestaurant.isEmpty()) {
+                return Optional.empty();
+            }
+
+            // 2. Update the restaurant using the repository
+            restaurantRepository.updateRestaurant(
+                id,
+                updatedRestaurantDTO.getName(),
+                updatedRestaurantDTO.getPriceRange(),
+                updatedRestaurantDTO.getPhone()
+            );
+
+            // 3. Retrieve the updated restaurant
+            Optional<Restaurant> updatedRestaurant = restaurantRepository.findRestaurantById(id);
+            if (updatedRestaurant.isPresent()) {
+                Restaurant restaurant = updatedRestaurant.get();
+                
+                // 4. Return the updated restaurant data as DTO
+                return Optional.of(new ApiCreateRestaurantDTO(
+                    restaurant.getId(),
+                    restaurant.getUserEntity().getId(),
+                    null, // Address is not updated in PUT operation
+                    restaurant.getName(),
+                    restaurant.getPriceRange(),
+                    restaurant.getPhone(),
+                    restaurant.getEmail()
+                ));
+            }
+
+            return Optional.empty();
+
+        } catch (Exception e) {
+            System.err.println("Error updating restaurant: " + e.getMessage());
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 
     // TODO
 
     /**
-     * Deletes a restaurant along with its associated data, including its product orders, orders and products.
+     * Deletes (DELETE) a restaurant along with its associated data, including its product orders, orders and products.
      *
      * @param restaurantId The ID of the restaurant to delete.
      */
     @Transactional
     public void deleteRestaurant(int restaurantId) {
-        return;
+        try {
+            // 1. Check if restaurant exists
+            Optional<Restaurant> restaurant = restaurantRepository.findRestaurantById(restaurantId);
+            if (restaurant.isEmpty()) {
+                throw new RuntimeException("Restaurant with ID " + restaurantId + " not found");
+            }
+
+            // 2. Get all orders for this restaurant
+            List<Order> orders = orderRepository.findOrdersByRestaurantId(restaurantId);
+            
+            // 3. Delete product orders for each order, then delete the order
+            for (Order order : orders) {
+                productOrderRepository.deleteProductOrdersByOrderId(order.getId());
+                orderRepository.deleteOrderById(order.getId());
+            }
+
+            // 4. Delete products associated with the restaurant
+            productRepository.deleteProductsByRestaurantId(restaurantId);
+
+            // 5. Finally, delete the restaurant
+            restaurantRepository.deleteRestaurantById(restaurantId);
+
+        } catch (Exception e) {
+            System.err.println("Error deleting restaurant: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to delete restaurant with ID " + restaurantId);
+        }
     }
 }

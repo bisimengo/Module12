@@ -19,12 +19,12 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByCourierId(int id);
 
     // TODO
-    @Query(nativeQuery = true, value = "TODO Write SQL query here")
+    @Query(nativeQuery = true, value = "SELECT * FROM orders WHERE restaurant_id = :restaurantId")
     List<Order> findOrdersByRestaurantId(@Param("restaurantId") int restaurantId);
 
     // TODO
     @Modifying
     @Transactional
-    @Query(nativeQuery = true, value = "TODO Write SQL query here")
+    @Query(nativeQuery = true, value = "DELETE FROM orders WHERE id = :orderId")
     void deleteOrderById(@Param("orderId") int orderId);
 }

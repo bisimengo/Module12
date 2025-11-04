@@ -33,8 +33,18 @@ public class RestaurantApiController {
      * @return ResponseEntity with the created restaurant's data, or a BadRequestException if creation fails.
      */
     @PostMapping("/api/restaurants")
-    public ResponseEntity<Object> createRestaurant(@RequestBody ApiCreateRestaurantDTO restaurant) {
-        return null; // TODO return proper object
+    public ResponseEntity<Object> createRestaurant(@RequestBody @Valid ApiCreateRestaurantDTO restaurant) {
+        try {
+            Optional<ApiCreateRestaurantDTO> createdRestaurant = restaurantService.createRestaurant(restaurant);
+            
+            if (createdRestaurant.isPresent()) {
+                return ResponseBuilder.buildOkResponse(createdRestaurant.get());
+            } else {
+                throw new BadRequestException("Failed to create restaurant. User may not exist or invalid data provided.");
+            }
+        } catch (Exception e) {
+            throw new BadRequestException("Error creating restaurant: " + e.getMessage());
+        }
     }
     
     // TODO
@@ -46,8 +56,13 @@ public class RestaurantApiController {
      * @return ResponseEntity with a success message, or a ResourceNotFoundException if the restaurant is not found.
      */
     @DeleteMapping("/api/restaurants/{id}")
-    public ResponseEntity<Object> deleteRestaurant(@PathVariable int id){
-        return null; // TODO return proper object
+    public ResponseEntity<Object> deleteRestaurant(@PathVariable int id) {
+        try {
+            restaurantService.deleteRestaurant(id);
+            return ResponseBuilder.buildOkResponse("Restaurant deleted successfully");
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("Restaurant with id " + id + " not found");
+        }
     }
 
     // TODO
@@ -62,7 +77,21 @@ public class RestaurantApiController {
      */
     @PutMapping("/api/restaurants/{id}")
     public ResponseEntity<Object> updateRestaurant(@PathVariable("id") int id, @Valid @RequestBody ApiCreateRestaurantDTO restaurantUpdateData, BindingResult result) {
-        return null; // TODO return proper object
+        if (result.hasErrors()) {
+            throw new BadRequestException("Validation errors in request data");
+        }
+        
+        try {
+            Optional<ApiCreateRestaurantDTO> updatedRestaurant = restaurantService.updateRestaurant(id, restaurantUpdateData);
+            
+            if (updatedRestaurant.isPresent()) {
+                return ResponseBuilder.buildOkResponse(updatedRestaurant.get());
+            } else {
+                throw new ResourceNotFoundException("Restaurant with id " + id + " not found");
+            }
+        } catch (Exception e) {
+            throw new BadRequestException("Error updating restaurant: " + e.getMessage());
+        }
     }
 
     /**
@@ -83,6 +112,7 @@ public class RestaurantApiController {
     /**
      * Returns a list of restaurants given a rating and price range
      *
+     * 
      * @param rating integer from 1 to 5 (optional)
      * @param priceRange integer from 1 to 3 (optional)
      * @return A list of restaurants that match the specified criteria

@@ -17,7 +17,7 @@ public interface ProductOrderRepository extends JpaRepository<ProductOrder, Inte
     // TODO
     @Modifying
     @Transactional
-    @Query(nativeQuery = true, value = "TODO Write SQL query here")
+    @Query(nativeQuery = true, value = "DELETE FROM product_orders WHERE order_id = :orderId")
     void deleteProductOrdersByOrderId(@Param("orderId") int orderId);
 
     Optional<ProductOrder> findById(int id);
