@@ -55,6 +55,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
         "WHERE (:rating IS NULL OR result.rating = :rating)")
     List<Object[]> findRestaurantsByRatingAndPriceRange(@Param("rating") Integer rating, @Param("priceRange") Integer priceRange);
 
+
+
     // TODO
     // EXECUTE A native SQL query for the POST /api/restaurants route
     @Modifying
@@ -68,7 +70,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
                @Param("name") String name, @Param("priceRange") Integer priceRange, 
                @Param("phone") String phone, @Param("email") String email);
 
-    // TODO
+
+    // TODO 
     // The native SQL query for the PUT /api/restaurants route
     @Modifying
     @Transactional
@@ -81,6 +84,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
     void updateRestaurant(@Param("restaurantId") int restaurantId, @Param("name") String name, 
                      @Param("priceRange") int priceRange, @Param("phone") String phone);
 
+
     // TODO
     //The native SQL query for the GET /api/restaurant/{id} route
     @Query(nativeQuery = true, value = 
@@ -89,8 +93,10 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
         """)
     Optional<Restaurant> findRestaurantById(@Param("restaurantId") int restaurantId);
 
-    // @Query(nativeQuery = true, value = "SELECT LAST_INSERT_ID() AS id")
-    // int getLastInsertedId();
+    @Query(nativeQuery = true, value = "SELECT LAST_INSERT_ID() AS id")
+    int getLastInsertedId();
+
+
 
     // TODO
     //The native SQL query for the DELETE /api/restaurants/{id} route
