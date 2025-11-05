@@ -2,7 +2,11 @@ package com.rocketFoodDelivery.rocketFood.controller.api;
 
 import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateRestaurantDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiRestaurantDTO;
+import com.rocketFoodDelivery.rocketFood.dtos.AuthRequestDTO;
+import com.rocketFoodDelivery.rocketFood.dtos.AuthResponseSuccessDTO;
+import com.rocketFoodDelivery.rocketFood.dtos.AuthResponseErrorDTO;
 import com.rocketFoodDelivery.rocketFood.service.RestaurantService;
+import com.rocketFoodDelivery.rocketFood.service.AuthService;
 import com.rocketFoodDelivery.rocketFood.util.ResponseBuilder;
 import com.rocketFoodDelivery.rocketFood.exception.*;
 
@@ -18,10 +22,36 @@ import java.util.Optional;
 @RestController
 public class RestaurantApiController {
     private RestaurantService restaurantService;
+    private AuthService authService;
 
     @Autowired
-    public RestaurantApiController(RestaurantService restaurantService) {
+    public RestaurantApiController(RestaurantService restaurantService, AuthService authService) {
         this.restaurantService = restaurantService;
+        this.authService = authService;
+    }
+
+    /**
+     * Authenticates a user and returns an access token.
+     *
+     * @param authRequest The authentication data containing email and password.
+     * @return ResponseEntity with the access token if successful, or error response if authentication fails.
+     */
+    @PostMapping("/api/auth")
+    public ResponseEntity<Object> authenticate(@RequestBody @Valid AuthRequestDTO authRequest) {
+        try {
+            String token = authService.authenticate(authRequest.getEmail(), authRequest.getPassword());
+            
+            if (token != null) {
+                AuthResponseSuccessDTO response = new AuthResponseSuccessDTO(token, true);
+                return ResponseBuilder.buildOkResponse(response);
+            } else {
+                AuthResponseErrorDTO errorResponse = new AuthResponseErrorDTO(false);
+                return ResponseBuilder.buildErrorResponse(errorResponse);
+            }
+        } catch (Exception e) {
+            AuthResponseErrorDTO errorResponse = new AuthResponseErrorDTO(false);
+            return ResponseBuilder.buildErrorResponse(errorResponse);
+        }
     }
 
     // TODO
@@ -46,6 +76,7 @@ public class RestaurantApiController {
             throw new BadRequestException("Error creating restaurant: " + e.getMessage());
         }
     }
+
     
     // TODO
 
@@ -126,4 +157,6 @@ public class RestaurantApiController {
         @RequestParam(name = "price_range", required = false) Integer priceRange) {
         return ResponseBuilder.buildOkResponse(restaurantService.findRestaurantsByRatingAndPriceRange(rating, priceRange));
     }
+
+   
 }
