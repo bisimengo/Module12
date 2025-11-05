@@ -34,7 +34,7 @@ public class RestaurantService {
     private final ProductOrderRepository productOrderRepository;
     private final UserRepository userRepository;
     private final AddressService addressService;
-    private final AddressRepository addressRepository;  // Add this field
+    private final AddressRepository addressRepository;  
 
     @Autowired
     public RestaurantService(
@@ -44,7 +44,7 @@ public class RestaurantService {
         ProductOrderRepository productOrderRepository,
         UserRepository userRepository,
         AddressService addressService,
-        AddressRepository addressRepository  // Add this parameter
+        AddressRepository addressRepository   
         ) {
         this.restaurantRepository = restaurantRepository;
         this.productRepository = productRepository;
@@ -52,7 +52,7 @@ public class RestaurantService {
         this.productOrderRepository = productOrderRepository;
         this.userRepository = userRepository;
         this.addressService = addressService;
-        this.addressRepository = addressRepository;  // Add this
+        this.addressRepository = addressRepository;  
     }
 
     public List<Restaurant> findAllRestaurants() {

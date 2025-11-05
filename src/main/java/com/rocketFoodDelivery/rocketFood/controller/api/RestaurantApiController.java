@@ -57,7 +57,7 @@ public class RestaurantApiController {
     // TODO
 
     /**
-     * Creates a new restaurant.
+     * Creates a new restaurant. (POST)
      *
      * @param restaurant The data for the new restaurant.
      * @return ResponseEntity with the created restaurant's data, or a BadRequestException if creation fails.
@@ -81,7 +81,7 @@ public class RestaurantApiController {
     // TODO
 
     /**
-     * Deletes a restaurant by ID.
+     * Deletes a restaurant by ID.(DELETE)
      *
      * @param id The ID of the restaurant to delete.
      * @return ResponseEntity with a success message, or a ResourceNotFoundException if the restaurant is not found.
@@ -99,7 +99,7 @@ public class RestaurantApiController {
     // TODO
 
     /**
-     * Updates an existing restaurant by ID.
+     * Updates an existing restaurant by ID.(PUT)
      *
      * @param id                    The ID of the restaurant to update.
      * @param restaurantUpdateData  The updated data for the restaurant.
@@ -126,7 +126,7 @@ public class RestaurantApiController {
     }
 
     /**
-     * Retrieves details for a restaurant, including its average rating, based on the provided restaurant ID.
+     * Retrieves details for a restaurant, including its average rating, based on the provided restaurant ID.(GET)
      *
      * @param id The unique identifier of the restaurant to retrieve.
      * @return ResponseEntity with HTTP 200 OK if the restaurant is found, HTTP 404 Not Found otherwise.
@@ -141,9 +141,8 @@ public class RestaurantApiController {
     }
 
     /**
-     * Returns a list of restaurants given a rating and price range
+     * Returns a list of restaurants given a rating and price range(GET).
      *
-     * 
      * @param rating integer from 1 to 5 (optional)
      * @param priceRange integer from 1 to 3 (optional)
      * @return A list of restaurants that match the specified criteria
