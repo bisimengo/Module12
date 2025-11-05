@@ -38,4 +38,11 @@ public class GlobalExceptionHandler {
         response.setDetails(ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    // public static ResponseEntity<Object> buildErrorResponse(String message) {
+    //     ApiErrorDTO response = new ApiErrorDTO();
+    //     response.setError("Error");
+    //     response.setDetails(message);
+    //     return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    // }
 }

@@ -45,12 +45,10 @@ public class RestaurantApiController {
                 AuthResponseSuccessDTO response = new AuthResponseSuccessDTO(token, true);
                 return ResponseBuilder.buildOkResponse(response);
             } else {
-                AuthResponseErrorDTO errorResponse = new AuthResponseErrorDTO(false);
-                return ResponseBuilder.buildErrorResponse(errorResponse);
+                throw new BadRequestException("Invalid email or password");
             }
         } catch (Exception e) {
-            AuthResponseErrorDTO errorResponse = new AuthResponseErrorDTO(false);
-            return ResponseBuilder.buildErrorResponse(errorResponse);
+            throw new BadRequestException("Authentication failed: " + e.getMessage());
         }
     }
 
