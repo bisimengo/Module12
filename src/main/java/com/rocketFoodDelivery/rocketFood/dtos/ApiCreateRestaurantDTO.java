@@ -16,22 +16,50 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ApiCreateRestaurantDTO {
-    private int id;
-
-    @JsonProperty("user_id")
-    private int userId;
-
     private String name;
+    private Integer userId; // Should be userId, not user_id
+    private String address;
+    private Integer priceRange;
 
-    @JsonProperty("price_range")
-    @Min(1)
-    @Max(3)
-    private int priceRange;
+    // Constructors
+    public ApiCreateRestaurantDTO() {} // Default constructor is required
 
-    private String phone;
+    // If you want to accept user_id in JSON, add this annotation:
+    @JsonProperty("user_id")
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
 
-    @Email
-    private String email;
+    // Getters and setters
+    public String getName() {
+        return name;
+    }
 
-    private ApiAddressDTO address;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public Integer getPriceRange() {
+        return priceRange;
+    }
+
+    public void setPriceRange(Integer priceRange) {
+        this.priceRange = priceRange;
+    }
 }

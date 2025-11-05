@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorDTO> handleBadRequestException(BadRequestException ex) {
         ApiErrorDTO response = new ApiErrorDTO();
         response.setError("Invalid or missing parameters");
-        response.setDetails(ex.getMessage());
+        response.setDetails(ex.getMessage()); // This will now show the specific message
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 

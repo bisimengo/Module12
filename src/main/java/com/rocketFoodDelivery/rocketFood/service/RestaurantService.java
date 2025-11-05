@@ -179,7 +179,6 @@ public class RestaurantService {
         }
     }
 
-    // TODO
 
     /**
      * Finds (GET) a restaurant by its ID.

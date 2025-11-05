@@ -2,13 +2,10 @@ package com.rocketFoodDelivery.rocketFood.controller.api;
 
 import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateRestaurantDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiRestaurantDTO;
-import com.rocketFoodDelivery.rocketFood.dtos.AuthRequestDTO;
-import com.rocketFoodDelivery.rocketFood.dtos.AuthResponseSuccessDTO;
-import com.rocketFoodDelivery.rocketFood.dtos.AuthResponseErrorDTO;
 import com.rocketFoodDelivery.rocketFood.service.RestaurantService;
-import com.rocketFoodDelivery.rocketFood.service.AuthService;
 import com.rocketFoodDelivery.rocketFood.util.ResponseBuilder;
 import com.rocketFoodDelivery.rocketFood.exception.*;
+import com.rocketFoodDelivery.rocketFood.service.ProductService
 
 import jakarta.validation.Valid;
 
@@ -22,37 +19,11 @@ import java.util.Optional;
 @RestController
 public class RestaurantApiController {
     private RestaurantService restaurantService;
-    private AuthService authService;
 
     @Autowired
-    public RestaurantApiController(RestaurantService restaurantService, AuthService authService) {
+    public RestaurantApiController(RestaurantService restaurantService) {
         this.restaurantService = restaurantService;
-        this.authService = authService;
     }
-
-    /**
-     * Authenticates a user and returns an access token.
-     *
-     * @param authRequest The authentication data containing email and password.
-     * @return ResponseEntity with the access token if successful, or error response if authentication fails.
-     */
-    @PostMapping("/api/auth")
-    public ResponseEntity<Object> authenticate(@RequestBody @Valid AuthRequestDTO authRequest) {
-        try {
-            String token = authService.authenticate(authRequest.getEmail(), authRequest.getPassword());
-            
-            if (token != null) {
-                AuthResponseSuccessDTO response = new AuthResponseSuccessDTO(token, true);
-                return ResponseBuilder.buildOkResponse(response);
-            } else {
-                throw new BadRequestException("Invalid email or password");
-            }
-        } catch (Exception e) {
-            throw new BadRequestException("Authentication failed: " + e.getMessage());
-        }
-    }
-
-    // TODO
 
     /**
      * Creates a new restaurant. (POST)
@@ -61,22 +32,24 @@ public class RestaurantApiController {
      * @return ResponseEntity with the created restaurant's data, or a BadRequestException if creation fails.
      */
     @PostMapping("/api/restaurants")
-    public ResponseEntity<Object> createRestaurant(@RequestBody @Valid ApiCreateRestaurantDTO restaurant) {
+    public ResponseEntity<Object> createRestaurant(@RequestBody @Valid ApiCreateRestaurantDTO restaurant, BindingResult result) {
+        // Check for validation errors first
+        if (result.hasErrors()) {
+            throw new BadRequestException("Invalid or missing parameters for restaurant creation");
+        }
+        
         try {
             Optional<ApiCreateRestaurantDTO> createdRestaurant = restaurantService.createRestaurant(restaurant);
             
             if (createdRestaurant.isPresent()) {
                 return ResponseBuilder.buildOkResponse(createdRestaurant.get());
             } else {
-                throw new BadRequestException("Failed to create restaurant. User may not exist or invalid data provided.");
+                throw new BadRequestException("Failed to create restaurant. User may not exist or invalid data provided");
             }
         } catch (Exception e) {
             throw new BadRequestException("Error creating restaurant: " + e.getMessage());
         }
     }
-
-    
-    // TODO
 
     /**
      * Deletes a restaurant by ID.(DELETE)
@@ -93,8 +66,6 @@ public class RestaurantApiController {
             throw new ResourceNotFoundException("Restaurant with id " + id + " not found");
         }
     }
-
-    // TODO
 
     /**
      * Updates an existing restaurant by ID.(PUT)
@@ -155,5 +126,20 @@ public class RestaurantApiController {
         return ResponseBuilder.buildOkResponse(restaurantService.findRestaurantsByRatingAndPriceRange(rating, priceRange));
     }
 
-   
+    /**
+     * Returns a list of products for a given restaurant (GET)
+     * query param is restaurant:id of the target restaurant
+     * /api/products?restaurant=1
+     *
+     * @param restaurantId The ID of the restaurant to retrieve products for.
+     * @return A list of products for the specified restaurant.
+     */
+    @GetMapping("/api/products")
+    public ResponseEntity<Object> getProductsByRestaurantId(@RequestParam("restaurant_id") int restaurantId) {
+        try {
+            return ResponseBuilder.buildOkResponse(restaurantService.findProductsByRestaurantId(restaurantId));
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("Products for restaurant with id " + restaurantId + " not found");
+        }
+    }
 }
