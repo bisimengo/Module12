@@ -36,11 +36,9 @@ public class RestaurantApiController {
         // Check for validation errors first
         if (result.hasErrors()) {
             throw new BadRequestException("Invalid or missing parameters for restaurant creation");
-        }
-        
+        }        
         try {
             Optional<ApiCreateRestaurantDTO> createdRestaurant = restaurantService.createRestaurant(restaurant);
-            
             if (createdRestaurant.isPresent()) {
                 return ResponseBuilder.buildOkResponse(createdRestaurant.get());
             } else {
@@ -78,8 +76,13 @@ public class RestaurantApiController {
     @PutMapping("/api/restaurants/{id}")
     public ResponseEntity<Object> updateRestaurant(@PathVariable("id") int id, @Valid @RequestBody ApiCreateRestaurantDTO restaurantUpdateData, BindingResult result) {
         if (result.hasErrors()) {
-            throw new BadRequestException("Validation errors in request data");
-        }
+            // Create detailed validation error message
+            StringBuilder errorDetails = new StringBuilder();
+            result.getFieldErrors().forEach(error -> {
+                errorDetails.append(error.getField()).append(": ").append(error.getDefaultMessage()).append("; ");
+            });
+            throw new ValidationException(errorDetails.toString().trim());
+        }        
         
         try {
             Optional<ApiCreateRestaurantDTO> updatedRestaurant = restaurantService.updateRestaurant(id, restaurantUpdateData);
