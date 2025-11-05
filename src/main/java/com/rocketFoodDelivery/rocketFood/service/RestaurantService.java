@@ -79,6 +79,7 @@ public class RestaurantService {
             double rating = (row[3] != null) ? ((BigDecimal) row[3]).setScale(1, RoundingMode.HALF_UP).doubleValue() : 0.0;
             int roundedRating = (int) Math.ceil(rating);
             ApiRestaurantDTO restaurantDTO = new ApiRestaurantDTO(restaurantId, name, priceRange, roundedRating);
+            System.out.println("Restaurant found: " + restaurantDTO.getName());
             return Optional.of(restaurantDTO);
         } else {
             return Optional.empty();
