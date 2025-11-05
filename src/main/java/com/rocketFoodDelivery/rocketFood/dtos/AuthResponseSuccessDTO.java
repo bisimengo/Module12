@@ -13,3 +13,4 @@ public class AuthResponseSuccessDTO {
     private String accessToken;
     private boolean success;
 }
+
