@@ -5,7 +5,6 @@ import com.rocketFoodDelivery.rocketFood.dtos.ApiRestaurantDTO;
 import com.rocketFoodDelivery.rocketFood.service.RestaurantService;
 import com.rocketFoodDelivery.rocketFood.util.ResponseBuilder;
 import com.rocketFoodDelivery.rocketFood.exception.*;
-import com.rocketFoodDelivery.rocketFood.service.ProductService
 
 import jakarta.validation.Valid;
 
