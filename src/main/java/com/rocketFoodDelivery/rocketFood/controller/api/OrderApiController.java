@@ -4,7 +4,8 @@ import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderRequestDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderStatusDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiErrorDTO;
-import com.rocketFoodDelivery.rocketFood.service.RestaurantService;
+import com.rocketFoodDelivery.rocketFood.service.OrderService;
+import com.rocketFoodDelivery.rocketFood.service.OrderStatusService;
 import com.rocketFoodDelivery.rocketFood.util.ResponseBuilder;
 import com.rocketFoodDelivery.rocketFood.exception.*;
 
@@ -18,12 +19,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
-public class OrdersApiController {
+public class OrderApiController {
     private OrderService orderService;
+    private OrderStatusService orderStatusService;
 
     @Autowired
-    public OrdersApiController(OrderService orderService) {
+    public OrderApiController(OrderService orderService, OrderStatusService orderStatusService) {
         this.orderService = orderService;
+        this.orderStatusService = orderStatusService;
     }
     
     // POST /api/order/{order_id}/status endpoint
