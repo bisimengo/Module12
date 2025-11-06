@@ -4,7 +4,6 @@ import com.rocketFoodDelivery.rocketFood.dtos.ApiProductForOrderApiDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiProductDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiErrorDTO;
 import com.rocketFoodDelivery.rocketFood.service.ProductService;
-import com.rocketFoodDelivery.rocketFood.service.RestaurantService;
 import com.rocketFoodDelivery.rocketFood.util.ResponseBuilder;
 import com.rocketFoodDelivery.rocketFood.exception.*;
 
@@ -20,14 +19,11 @@ import java.util.Optional;
 @RestController
 public class ProductApiController {
     private ProductService productService;
-    private RestaurantService restaurantService;
 
     @Autowired
-    public ProductApiController(ProductService productService, RestaurantService restaurantService) {
+    public ProductApiController(ProductService productService) {
         this.productService = productService;
-        this.restaurantService = restaurantService;
     }
-
     
     /**
      * Returns a list of products for a given restaurant (GET)
@@ -38,7 +34,7 @@ public class ProductApiController {
      * @return A list of products for the specified restaurant.
      */
     @GetMapping("/api/products")
-    public ResponseEntity<Object> getProductsByRestaurantId(@RequestParam("restaurant_id") int restaurantId) {
+    public ResponseEntity<Object> getProductsByRestaurantId(@RequestParam("restaurant") int restaurantId) {
         try {
             return ResponseBuilder.buildOkResponse(productService.findProductsByRestaurantId(restaurantId));
         } catch (Exception e) {
