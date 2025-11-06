@@ -2,6 +2,7 @@ package com.rocketFoodDelivery.rocketFood.controller.api;
 
 import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateRestaurantDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiRestaurantDTO;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiErrorDTO;
 import com.rocketFoodDelivery.rocketFood.service.RestaurantService;
 import com.rocketFoodDelivery.rocketFood.util.ResponseBuilder;
 import com.rocketFoodDelivery.rocketFood.exception.*;
@@ -128,20 +129,4 @@ public class RestaurantApiController {
         return ResponseBuilder.buildOkResponse(restaurantService.findRestaurantsByRatingAndPriceRange(rating, priceRange));
     }
 
-    /**
-     * Returns a list of products for a given restaurant (GET)
-     * query param is restaurant:id of the target restaurant
-     * /api/products?restaurant=1
-     *
-     * @param restaurantId The ID of the restaurant to retrieve products for.
-     * @return A list of products for the specified restaurant.
-     */
-    @GetMapping("/api/products")
-    public ResponseEntity<Object> getProductsByRestaurantId(@RequestParam("restaurant_id") int restaurantId) {
-        try {
-            return ResponseBuilder.buildOkResponse(restaurantService.findProductsByRestaurantId(restaurantId));
-        } catch (Exception e) {
-            throw new ResourceNotFoundException("Products for restaurant with id " + restaurantId + " not found");
-        }
-    }
 }

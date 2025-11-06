@@ -1,12 +1,7 @@
 package com.rocketFoodDelivery.rocketFood.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,50 +12,18 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ApiCreateRestaurantDTO {
+    private Integer id;           
     private String name;
-    private Integer userId; // Should be userId, not user_id
-    private String address;
+    private Integer userId;
+    private ApiAddressDTO address;  
     private Integer priceRange;
+    private String phone; 
+    private String email;
 
-    // Constructors
-    public ApiCreateRestaurantDTO() {} // Default constructor is required
 
-    // If you want to accept user_id in JSON, add this annotation:
+    // Keep only the custom setter for JSON mapping
     @JsonProperty("user_id")
     public void setUserId(Integer userId) {
         this.userId = userId;
-    }
-
-    // Getters and setters
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public Integer getPriceRange() {
-        return priceRange;
-    }
-
-    public void setPriceRange(Integer priceRange) {
-        this.priceRange = priceRange;
     }
 }

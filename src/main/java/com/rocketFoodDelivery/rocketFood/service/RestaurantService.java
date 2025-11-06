@@ -164,12 +164,12 @@ public class RestaurantService {
 
             return Optional.of(new ApiCreateRestaurantDTO(
                 newRestaurantId,
-                restaurant.getUserId(),
                 restaurant.getName(),           // Add this line
+                restaurant.getUserId(),
+                returnAddress,
                 restaurant.getPriceRange(),
                 restaurant.getPhone(),
-                restaurant.getEmail(),
-                returnAddress                   // Move this to the end and uncomment
+                restaurant.getEmail()
             ));
 
         } catch (Exception e) {
@@ -226,12 +226,12 @@ public class RestaurantService {
                 // 4. Return the updated restaurant data as DTO
                 return Optional.of(new ApiCreateRestaurantDTO(
                     restaurant.getId(),
+                    restaurant.getName(),           
                     restaurant.getUserEntity().getId(),
-                    restaurant.getName(),           // Uncomment this line
+                    null,
                     restaurant.getPriceRange(),
                     restaurant.getPhone(),
-                    restaurant.getEmail(),
-                    null                           // Add this as the last parameter
+                    restaurant.getEmail()
                 ));
             }
 
