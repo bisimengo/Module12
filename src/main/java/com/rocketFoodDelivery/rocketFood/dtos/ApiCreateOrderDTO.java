@@ -17,28 +17,29 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ApiCreateOrderDTO {
-    private Integer id; 
-    private Integer restaurantId;          
-    private String customerId;
-    private Integer orderStatus;
-    private ApiAddressDTO courier;  
-    private Integer restaurantRating;
-   
-
-    
-    // Custom setters for JSON mapping
-    @JsonProperty("customer_id")
-    public void setCustomerId(Integer customerId) {
-        this.customerId = customerId;
-    }
-    
+    @NotNull(message = "Restaurant ID is required")
     @JsonProperty("restaurant_id")
-    public void setRestaurantId(Integer restaurantId) {
-        this.restaurantId = restaurantId;
-    }
+    private Integer restaurantId;
     
-    @JsonProperty("courier_id")
-    public void setCourierId(Integer courierId) {
-        this.courierId = courierId;
+    @NotNull(message = "Customer ID is required")
+    @JsonProperty("customer_id")
+    private Integer customerId;
+    
+    @NotEmpty(message = "Products list cannot be empty")
+    @Valid
+    private List<ProductOrderDTO> products;
+    
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ProductOrderDTO {
+        @NotNull(message = "Product ID is required")
+        @Positive(message = "Product ID must be positive")
+        private Integer id;
+        
+        @NotNull(message = "Quantity is required")
+        @Positive(message = "Quantity must be positive")
+        private Integer quantity;
     }
 }

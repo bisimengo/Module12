@@ -37,4 +37,14 @@ public interface ProductOrderRepository extends JpaRepository<ProductOrder, Inte
         WHERE po.order_id = :orderId
         """)
     List<Object[]> findProductsByOrderId(@Param("orderId") int orderId);
+
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = """
+        INSERT INTO product_orders (order_id, product_id, quantity) 
+        VALUES (:orderId, :productId, :quantity)
+        """)
+    void createProductOrder(@Param("orderId") int orderId, 
+                           @Param("productId") int productId, 
+                           @Param("quantity") int quantity);
 }

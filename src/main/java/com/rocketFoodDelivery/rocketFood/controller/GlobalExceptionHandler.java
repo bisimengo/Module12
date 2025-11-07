@@ -65,4 +65,13 @@ public class GlobalExceptionHandler {
         response.setDetails(ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(InsufficientInventoryException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ApiErrorDTO> handleInsufficientInventoryException(InsufficientInventoryException ex) {
+        ApiErrorDTO response = new ApiErrorDTO();
+        response.setError("Invalid or missing parameters");
+        response.setDetails(null);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 }

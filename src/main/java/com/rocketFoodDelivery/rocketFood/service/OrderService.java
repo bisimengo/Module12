@@ -36,17 +36,20 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final OrderStatusRepository orderStatusRepository;
     private final ProductOrderRepository productOrderRepository;
+    private final CustomerRepository customerRepository;
     
     @Autowired
     public OrderService(OrderRepository orderRepository, UserRepository userRepository,
                        RestaurantRepository restaurantRepository, ProductRepository productRepository,
-                       OrderStatusRepository orderStatusRepository, ProductOrderRepository productOrderRepository) {
+                       OrderStatusRepository orderStatusRepository, ProductOrderRepository productOrderRepository,
+                       CustomerRepository customerRepository) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.restaurantRepository = restaurantRepository;
         this.productRepository = productRepository;
         this.orderStatusRepository = orderStatusRepository;
         this.productOrderRepository = productOrderRepository;
+        this.customerRepository = customerRepository;
     }
 
     /**
@@ -142,9 +145,58 @@ public class OrderService {
      */
     @Transactional
     public ApiOrderDTO createOrder(ApiCreateOrderDTO createOrderDTO) {
-        // Convert ApiCreateOrderDTO to ApiOrderRequestDTO
-        ApiOrderRequestDTO orderRequest = convertToOrderRequestDTO(createOrderDTO);
-        return addOrder(orderRequest);
+        try {
+            // 1. Validate customer exists
+            if (!customerRepository.existsById(createOrderDTO.getCustomerId())) {
+                throw new ResourceNotFoundException("Customer with id " + createOrderDTO.getCustomerId() + " not found");
+            }
+
+            // 2. Validate restaurant exists
+            if (!restaurantRepository.existsById(createOrderDTO.getRestaurantId())) {
+                throw new ResourceNotFoundException("Restaurant with id " + createOrderDTO.getRestaurantId() + " not found");
+            }
+
+            // 3. Validate products exist and have sufficient inventory
+            for (ApiCreateOrderDTO.ProductOrderDTO productOrder : createOrderDTO.getProducts()) {
+                Optional<Product> product = productRepository.findById(productOrder.getId());
+                if (product.isEmpty()) {
+                    throw new ResourceNotFoundException("Product with id " + productOrder.getId() + " not found");
+                }
+                // Add inventory check if needed
+            }
+
+            // 4. Create the order using repository methods
+            orderRepository.createOrder(
+                createOrderDTO.getCustomerId(),
+                createOrderDTO.getRestaurantId(),
+                1 // Default status: pending
+            );
+            
+            // 5. Get the created order ID
+            int newOrderId = orderRepository.getLastInsertedId();
+
+            // 6. Add products to the order
+            for (ApiCreateOrderDTO.ProductOrderDTO productOrder : createOrderDTO.getProducts()) {
+                productOrderRepository.createProductOrder(
+                    newOrderId,
+                    productOrder.getId(),
+                    productOrder.getQuantity()
+                );
+            }
+
+            // 7. Get the complete order details and return as ApiOrderDTO
+            List<Object[]> orderData = orderRepository.findOrdersWithDetailsByOrderId(newOrderId);
+            if (orderData.isEmpty()) {
+                throw new RuntimeException("Failed to retrieve created order");
+            }
+
+            return convertToApiOrderDTO(orderData.get(0));
+
+        } catch (ResourceNotFoundException | InsufficientInventoryException e) {
+            throw e; // Re-throw to be handled by GlobalExceptionHandler
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating order: " + e.getMessage());
+        }
     }
 
     /**

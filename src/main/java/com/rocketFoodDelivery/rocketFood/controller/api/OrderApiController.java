@@ -50,47 +50,38 @@ public class OrderApiController {
     // }
     // }
 
-    // GET /api/orders
-        // ● Returns a list of orders given a user type and id
-        // ● Query parameter ‘type’: customer, restaurant or courier (required)
-        // ● Query parameter ‘id’: id of customer, restaurant or courier (required) * Not the id of the
-        // users table entry
-        // ● Example: /api/orders?type=customer&id=7
-   @GetMapping("/api/orders")
-    public ResponseEntity<Object> getOrdersByUserTypeAndId(
-        @RequestParam("type") String userType,
-        @RequestParam("id") int userId) {
+//     // GET /api/orders
+//         // ● Returns a list of orders given a user type and id
+//         // ● Query parameter ‘type’: customer, restaurant or courier (required)
+//         // ● Query parameter ‘id’: id of customer, restaurant or courier (required) * Not the id of the
+//         // users table entry
+//         // ● Example: /api/orders?type=customer&id=7
+//    @GetMapping("/api/orders")
+//     public ResponseEntity<Object> getOrdersByUserTypeAndId(
+//         @RequestParam("type") String userType,
+//         @RequestParam("id") int userId) {
     
-    List<ApiOrderDTO> orders = orderService.getOrdersByUserTypeAndId(userType, userId);
-    if (orders.isEmpty()) {
-        throw new ResourceNotFoundException("No orders found for " + userType + " with id " + userId);
-    }
-    return ResponseBuilder.buildOkResponse(orders);
-}
+//     List<ApiOrderDTO> orders = orderService.getOrdersByUserTypeAndId(userType, userId);
+//     if (orders.isEmpty()) {
+//         throw new ResourceNotFoundException("No orders found for " + userType + " with id " + userId);
+//     }
+//     return ResponseBuilder.buildOkResponse(orders);
+// }
 
     // POST /api/orders
     // Creates a new order
 
-    // @PostMapping("/api/orders")
-    // public ResponseEntity<Object> createOrder(
-    //         @Valid @RequestBody ApiCreateOrderDTO apiCreateOrderDTO,
-    //         BindingResult bindingResult) {
-    //     if (bindingResult.hasErrors()) {
-    //         ApiErrorDTO apiErrorDTO = ResponseBuilder.buildValidationErrorResponse(bindingResult);
-    //         return ResponseBuilder.buildBadRequestResponse(apiErrorDTO);
-    //     }
-    //     try {
-    //         ApiOrderDTO createdOrder = orderService.createOrder(apiCreateOrderDTO);
-    //         return ResponseBuilder.buildOkResponse(createdOrder);
-    //     } catch (ResourceNotFoundException e) {
-    //         throw new ResourceNotFoundException("Resource not found: " + e.getMessage());
-    //     } catch (InsufficientInventoryException e) {
-    //         throw new InsufficientInventoryException("Insufficient inventory: " + e.getMessage());
-    //     } catch (Exception e) {
-    //         throw new RuntimeException("Error creating order: " + e.getMessage());
-    //     }
-    //     return ResponseBuilder.buildInternalServerErrorResponse("Error creating order");
-    // }
+   @PostMapping("/api/orders")
+    public ResponseEntity<Object> createOrder(
+        @Valid @RequestBody ApiCreateOrderDTO apiCreateOrderDTO,
+        BindingResult bindingResult) {
+    
+    if (bindingResult.hasErrors()) {
+        throw new BadRequestException("Invalid or missing parameters");
+    }    
+    ApiOrderDTO createdOrder = orderService.createOrder(apiCreateOrderDTO);
+    return ResponseBuilder.buildOkResponse(createdOrder);
+}
 
 
       
