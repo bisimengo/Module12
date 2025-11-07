@@ -5,7 +5,6 @@ import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderRequestDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderStatusDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiErrorDTO;
 import com.rocketFoodDelivery.rocketFood.service.OrderService;
-import com.rocketFoodDelivery.rocketFood.service.OrderStatusService;
 import com.rocketFoodDelivery.rocketFood.util.ResponseBuilder;
 import com.rocketFoodDelivery.rocketFood.exception.*;
 
@@ -21,12 +20,10 @@ import java.util.Optional;
 @RestController
 public class OrderApiController {
     private OrderService orderService;
-    private OrderStatusService orderStatusService;
 
     @Autowired
-    public OrderApiController(OrderService orderService, OrderStatusService orderStatusService) {
+    public OrderApiController(OrderService orderService) {
         this.orderService = orderService;
-        this.orderStatusService = orderStatusService;
     }
     
     // POST /api/order/{order_id}/status endpoint
@@ -54,26 +51,26 @@ public class OrderApiController {
     // POST /api/orders
     // Creates a new order
 
-    @PostMapping("/api/orders")
-    public ResponseEntity<Object> createOrder(
-            @Valid @RequestBody ApiOrderRequestDTO apiOrderRequestDTO,
-            BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            ApiErrorDTO apiErrorDTO = ResponseBuilder.buildValidationErrorResponse(bindingResult);
-            return ResponseBuilder.buildBadRequestResponse(apiErrorDTO);
-        }
-        try {
-            ApiOrderDTO createdOrder = orderService.createOrder(apiOrderRequestDTO);
-            return ResponseBuilder.buildOkResponse(createdOrder);
-        } catch (ResourceNotFoundException e) {
-            throw new ResourceNotFoundException("Resource not found: " + e.getMessage());
-        } catch (InsufficientInventoryException e) {
-            throw new InsufficientInventoryException("Insufficient inventory: " + e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException("Error creating order: " + e.getMessage());
-        }
-        return ResponseBuilder.buildInternalServerErrorResponse("Error creating order");
-    }
+    // @PostMapping("/api/orders")
+    // public ResponseEntity<Object> createOrder(
+    //         @Valid @RequestBody ApiCreateOrderDTO apiCreateOrderDTO,
+    //         BindingResult bindingResult) {
+    //     if (bindingResult.hasErrors()) {
+    //         ApiErrorDTO apiErrorDTO = ResponseBuilder.buildValidationErrorResponse(bindingResult);
+    //         return ResponseBuilder.buildBadRequestResponse(apiErrorDTO);
+    //     }
+    //     try {
+    //         ApiOrderDTO createdOrder = orderService.createOrder(apiCreateOrderDTO);
+    //         return ResponseBuilder.buildOkResponse(createdOrder);
+    //     } catch (ResourceNotFoundException e) {
+    //         throw new ResourceNotFoundException("Resource not found: " + e.getMessage());
+    //     } catch (InsufficientInventoryException e) {
+    //         throw new InsufficientInventoryException("Insufficient inventory: " + e.getMessage());
+    //     } catch (Exception e) {
+    //         throw new RuntimeException("Error creating order: " + e.getMessage());
+    //     }
+    //     return ResponseBuilder.buildInternalServerErrorResponse("Error creating order");
+    // }
 
 
     // GET /api/orders
@@ -92,6 +89,8 @@ public class OrderApiController {
             throw new ResourceNotFoundException("No orders found for " + userType + " with id " + userId);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid user type: " + userType);
+        } catch (Exception e) {
+            throw new RuntimeException("Error retrieving orders: " + e.getMessage());
         }
     }   
 

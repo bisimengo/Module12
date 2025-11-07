@@ -13,17 +13,26 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ApiCreateRestaurantDTO {
     private Integer id;           
+    @NotBlank(message = "Name is required")
     private String name;
-    private Integer userId;
-    private ApiAddressDTO address;  
-    private Integer priceRange;
-    private String phone; 
-    private String email;
-
-
-    // Keep only the custom setter for JSON mapping
+    
+    @NotNull(message = "User ID is required")
     @JsonProperty("user_id")
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
+    private Integer userId;
+    
+    @NotNull(message = "Address is required")
+    @Valid
+    private ApiAddressDTO address;  
+    
+    @NotNull(message = "Price range is required")
+    @Min(value = 1, message = "Price range must be between 1 and 3")
+    @Max(value = 3, message = "Price range must be between 1 and 3")
+    @JsonProperty("price_range")
+    private Integer priceRange;
+    
+    @NotBlank(message = "Phone is required")
+    private String phone; 
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email should be valid")
+    private String email;
 }

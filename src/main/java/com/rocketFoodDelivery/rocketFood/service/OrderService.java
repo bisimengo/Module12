@@ -2,15 +2,19 @@ package com.rocketFoodDelivery.rocketFood.service;
 
 import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderRequestDTO;
-import com.rocketFoodDelivery.rocketFood.dtos.ApiProductForOrderDTO;
-import com.rocketFoodDelivery.rocketFood.entities.Order;
-import com.rocketFoodDelivery.rocketFood.entities.User;
-import com.rocketFoodDelivery.rocketFood.entities.Restaurant;
-import com.rocketFoodDelivery.rocketFood.entities.Product;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateOrderDTO; 
+import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderStatusDTO;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiProductForOrderApiDTO;
+// import com.rocketFoodDelivery.rocketFood.entities.Order;
+// import com.rocketFoodDelivery.rocketFood.entities.User;
+// import com.rocketFoodDelivery.rocketFood.entities.Restaurant;
+// import com.rocketFoodDelivery.rocketFood.entities.Product;
+// import com.rocketFoodDelivery.rocketFood.entities.OrderItem;
 import com.rocketFoodDelivery.rocketFood.repository.OrderRepository;
 import com.rocketFoodDelivery.rocketFood.repository.UserRepository;
 import com.rocketFoodDelivery.rocketFood.repository.RestaurantRepository;
 import com.rocketFoodDelivery.rocketFood.repository.ProductRepository;
+import com.rocketFoodDelivery.rocketFood.exception.ResourceNotFoundException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +36,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     
     @Autowired
-    public OrderService(OrderRepository orderRepository, UserRepository userRepository, 
+    public OrderService(OrderRepository orderRepository, UserRepository userRepository,
                        RestaurantRepository restaurantRepository, ProductRepository productRepository) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
@@ -95,6 +99,19 @@ public class OrderService {
                 })
                 .collect(Collectors.toList());
 
+            // After saving the order, save order items
+            orderRequest.getProducts().forEach(productRequest -> {
+                Optional<Product> product = productRepository.findById(productRequest.getProductId());
+                if (product.isPresent()) {
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setOrder(savedOrder);
+                    orderItem.setProduct(product.get());
+                    orderItem.setQuantity(productRequest.getQuantity());
+                    orderItem.setUnitCost(product.get().getCost());
+                    orderItemRepository.save(orderItem); // You'll need this repository
+                }
+            });
+
             // 6. Build and return the response DTO
             return new ApiOrderDTO(
                 savedOrder.getId(),
@@ -113,6 +130,16 @@ public class OrderService {
         } catch (Exception e) {
             throw new RuntimeException("Error creating order: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Creates a new order using ApiCreateOrderDTO
+     */
+    @Transactional
+    public ApiOrderDTO createOrder(ApiCreateOrderDTO createOrderDTO) {
+        // Convert ApiCreateOrderDTO to ApiOrderRequestDTO
+        ApiOrderRequestDTO orderRequest = convertToOrderRequestDTO(createOrderDTO);
+        return addOrder(orderRequest);
     }
 
     /**
@@ -165,24 +192,54 @@ public class OrderService {
             .collect(Collectors.toList());
     }
 
-    /**
-     * Helper method to convert Order entity to ApiOrderDTO
-     */
-    private ApiOrderDTO convertToApiOrderDTO(Order order) {
-        return new ApiOrderDTO(
-            order.getId(),
-            order.getCustomer().getId(),
-            order.getCustomer().getName(),
-            order.getCustomer().getAddress() != null ? order.getCustomer().getAddress().getFullAddress() : "",
-            order.getRestaurant().getId(),
-            order.getRestaurant().getName(),
-            order.getRestaurant().getAddress() != null ? order.getRestaurant().getAddress().getFullAddress() : "",
-            order.getCourier() != null ? order.getCourier().getId() : null,
-            order.getCourier() != null ? order.getCourier().getName() : null,
-            order.getStatus(),
-            List.of() // You'll need to add product details here
-        );
-    }
- 
+    // /**
+    //  * Helper method to convert Order entity to ApiOrderDTO
+    //  */
+    // private ApiOrderDTO convertToApiOrderDTO(Order order) {
+    //     // Get products for this order
+    //     List<ApiProductForOrderDTO> productDTOs = order.getOrderItems().stream()
+    //         .map(orderItem -> new ApiProductForOrderDTO(
+    //             orderItem.getProduct().getId(),
+    //             orderItem.getProduct().getName(),
+    //             orderItem.getQuantity(),
+    //             orderItem.getProduct().getCost(),
+    //             orderItem.getQuantity() * orderItem.getProduct().getCost()
+    //         ))
+    //         .collect(Collectors.toList());
+
+    //     return new ApiOrderDTO(
+    //         order.getId(),
+    //         order.getCustomer().getId(),
+    //         order.getCustomer().getName(),
+    //         order.getCustomer().getAddress() != null ? order.getCustomer().getAddress().getFullAddress() : "",
+    //         order.getRestaurant().getId(),
+    //         order.getRestaurant().getName(),
+    //         order.getRestaurant().getAddress() != null ? order.getRestaurant().getAddress().getFullAddress() : "",
+    //         order.getCourier() != null ? order.getCourier().getId() : null,
+    //         order.getCourier() != null ? order.getCourier().getName() : null,
+    //         order.getStatus(),
+    //         productDTOs // ✅ FIXED: Now includes actual products instead of empty list
+    //     );
+    // }
+    
+    // /**
+    //  * Converts ApiCreateOrderDTO to ApiOrderRequestDTO
+    //  */
+    // private ApiOrderRequestDTO convertToOrderRequestDTO(ApiCreateOrderDTO createOrderDTO) {
+    //     // Convert nested ProductOrderDTO to the format expected by ApiOrderRequestDTO
+    //     List<ApiOrderRequestDTO.ProductOrderRequestDTO> products = createOrderDTO.getProducts().stream()
+    //         .map(productDTO -> new ApiOrderRequestDTO.ProductOrderRequestDTO(
+    //             productDTO.getProductId(),
+    //             productDTO.getQuantity()
+    //         ))
+    //         .collect(Collectors.toList());
+        
+    //     return new ApiOrderRequestDTO(
+    //         createOrderDTO.getCustomerId(),
+    //         createOrderDTO.getRestaurantId(),
+    //         createOrderDTO.getCourierId(),
+    //         products
+    //     );
+    // }
 
 }

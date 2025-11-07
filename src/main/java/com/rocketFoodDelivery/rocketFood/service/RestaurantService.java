@@ -96,19 +96,27 @@ public class RestaurantService {
      */
     public List<ApiRestaurantDTO> findRestaurantsByRatingAndPriceRange(Integer rating, Integer priceRange) {
         List<Object[]> restaurants = restaurantRepository.findRestaurantsByRatingAndPriceRange(rating, priceRange);
-
         List<ApiRestaurantDTO> restaurantDtos = new ArrayList<>();
 
-            for (Object[] row : restaurants) {
-                int restaurantId = (int) row[0];
-                String name = (String) row[1];
-                int range = (int) row[2];
-                double avgRating = (row[3] != null) ? ((BigDecimal) row[3]).setScale(1, RoundingMode.HALF_UP).doubleValue() : 0.0;
-                int roundedAvgRating = (int) Math.ceil(avgRating);
-                restaurantDtos.add(new ApiRestaurantDTO(restaurantId, name, range, roundedAvgRating));
+        for (Object[] row : restaurants) {
+            int restaurantId = ((Number) row[0]).intValue();
+            String name = (String) row[1];
+            int range = ((Number) row[2]).intValue();
+            
+            // Handle rating more carefully
+            int roundedAvgRating = 0;
+            if (row[3] != null) {
+                if (row[3] instanceof BigDecimal) {
+                    roundedAvgRating = ((BigDecimal) row[3]).intValue();
+                } else if (row[3] instanceof Number) {
+                    roundedAvgRating = ((Number) row[3]).intValue();
+                }
             }
+            
+            restaurantDtos.add(new ApiRestaurantDTO(restaurantId, name, range, roundedAvgRating));
+        }
 
-            return restaurantDtos;
+        return restaurantDtos;
     }
 
     // TODO
@@ -154,9 +162,9 @@ public class RestaurantService {
             // 4. Get the last inserted ID
             int newRestaurantId = restaurantRepository.getLastInsertedId();
 
-            // 5. Return the created restaurant data - create a new ApiAddressDTO for return
+            // 5. Return the created restaurant data with address ID included
             ApiAddressDTO returnAddress = new ApiAddressDTO(
-                (int) addressId.longValue(),
+                addressId.intValue(),
                 restaurant.getAddress().getStreetAddress(),
                 restaurant.getAddress().getCity(),
                 restaurant.getAddress().getPostalCode()
@@ -164,7 +172,7 @@ public class RestaurantService {
 
             return Optional.of(new ApiCreateRestaurantDTO(
                 newRestaurantId,
-                restaurant.getName(),           // Add this line
+                restaurant.getName(),
                 restaurant.getUserId(),
                 returnAddress,
                 restaurant.getPriceRange(),
