@@ -15,8 +15,7 @@ import com.rocketFoodDelivery.rocketFood.repository.OrderRepository;
 import com.rocketFoodDelivery.rocketFood.repository.ProductOrderRepository;
 import com.rocketFoodDelivery.rocketFood.repository.UserRepository;
 import org.springframework.data.repository.query.Param;
-
-
+import com.rocketFoodDelivery.rocketFood.dtos.ApiDeleteRestaurantResponseDTO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -277,33 +276,60 @@ public class RestaurantService {
      * @param restaurantId The ID of the restaurant to delete.
      */
     @Transactional
-    public void deleteRestaurant(int restaurantId) {
+    public Optional<ApiDeleteRestaurantResponseDTO> deleteRestaurant(int restaurantId) {
         try {
-            // 1. Check if restaurant exists
+            // 1. First, get the restaurant data with rating before deletion
+            List<Object[]> restaurantData = restaurantRepository.findRestaurantWithAverageRatingById(restaurantId);
+            if (restaurantData.isEmpty()) {
+                return Optional.empty(); // Restaurant not found
+            }
+            
+            // Extract restaurant information for response
+            Object[] row = restaurantData.get(0);
+            int id = ((Number) row[0]).intValue();
+            String name = (String) row[1];
+            int priceRange = ((Number) row[2]).intValue();
+            
+            // Handle rating calculation
+            int rating = 0;
+            if (row[3] != null) {
+                if (row[3] instanceof BigDecimal) {
+                    rating = ((BigDecimal) row[3]).intValue();
+                } else if (row[3] instanceof Number) {
+                    rating = ((Number) row[3]).intValue();
+                }
+            }
+            
+            // Create response DTO before deletion
+            ApiDeleteRestaurantResponseDTO responseDTO = new ApiDeleteRestaurantResponseDTO(id, name, priceRange, rating);
+
+            // 2. Now proceed with deletion logic
             Optional<Restaurant> restaurant = restaurantRepository.findRestaurantById(restaurantId);
             if (restaurant.isEmpty()) {
-                throw new RuntimeException("Restaurant with ID " + restaurantId + " not found");
+                return Optional.empty();
             }
 
-            // 2. Get all orders for this restaurant
+            // 3. Get all orders for this restaurant
             List<Order> orders = orderRepository.findOrdersByRestaurantId(restaurantId);
             
-            // 3. Delete product orders for each order, then delete the order
+            // 4. Delete product orders for each order, then delete the order
             for (Order order : orders) {
                 productOrderRepository.deleteProductOrdersByOrderId(order.getId());
                 orderRepository.deleteOrderById(order.getId());
             }
 
-            // 4. Delete products associated with the restaurant
+            // 5. Delete products associated with the restaurant
             productRepository.deleteProductsByRestaurantId(restaurantId);
 
-            // 5. Finally, delete the restaurant
+            // 6. Finally, delete the restaurant
             restaurantRepository.deleteRestaurantById(restaurantId);
+
+            return Optional.of(responseDTO);
 
         } catch (Exception e) {
             System.err.println("Error deleting restaurant: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("Failed to delete restaurant with ID " + restaurantId);
+            return Optional.empty();
         }
     }
 }

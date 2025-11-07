@@ -6,6 +6,7 @@ import com.rocketFoodDelivery.rocketFood.dtos.ApiErrorDTO;
 import com.rocketFoodDelivery.rocketFood.service.RestaurantService;
 import com.rocketFoodDelivery.rocketFood.util.ResponseBuilder;
 import com.rocketFoodDelivery.rocketFood.exception.*;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiDeleteRestaurantResponseDTO;
 
 import jakarta.validation.Valid;
 
@@ -128,13 +129,17 @@ public class RestaurantApiController {
      * Deletes a restaurant by ID.(DELETE)
      *
      * @param id The ID of the restaurant to delete.
-     * @return ResponseEntity with a success message, or a ResourceNotFoundException if the restaurant is not found.
+     * @return ResponseEntity with the deleted restaurant's data, or a ResourceNotFoundException if the restaurant is not found.
      */
     @DeleteMapping("/api/restaurants/{id}")
     public ResponseEntity<Object> deleteRestaurant(@PathVariable int id) {
         try {
-            restaurantService.deleteRestaurant(id);
-            return ResponseBuilder.buildOkResponse("Restaurant deleted successfully");
+            Optional<ApiDeleteRestaurantResponseDTO> deletedRestaurant = restaurantService.deleteRestaurant(id);
+            if (deletedRestaurant.isPresent()) {
+                return ResponseBuilder.buildOkResponse(deletedRestaurant.get());
+            } else {
+                throw new ResourceNotFoundException("Restaurant with id " + id + " not found");
+            }
         } catch (Exception e) {
             throw new ResourceNotFoundException("Restaurant with id " + id + " not found");
         }
