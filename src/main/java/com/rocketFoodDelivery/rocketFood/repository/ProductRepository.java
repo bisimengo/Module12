@@ -45,4 +45,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     INSERT INTO products (name, description, cost, restaurant_id) VALUES (:name, :description, :cost, :restaurantId)
     """)
     void addProduct(@Param("name") String name, @Param("description") String description, @Param("cost") double cost, @Param("restaurantId") int restaurantId);
+
+    // Add this method
+    List<Product> findByRestaurant_Id(int restaurantId);
 }

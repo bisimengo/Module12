@@ -37,12 +37,12 @@ public class RestaurantApiController {
      * @see RestaurantService#findRestaurantsByRatingAndPriceRange(Integer, Integer) for details on retrieving restaurant information.
      */
 
-    // @GetMapping("/api/restaurants")
-    // public ResponseEntity<Object> getAllRestaurants(
-    //     @RequestParam(name = "rating", required = false) Integer rating,
-    //     @RequestParam(name = "price_range", required = false) Integer priceRange) {
-    //     return ResponseBuilder.buildOkResponse(restaurantService.findRestaurantsByRatingAndPriceRange(rating, priceRange));
-    // }
+    @GetMapping("/api/restaurants")
+    public ResponseEntity<Object> getAllRestaurants(
+        @RequestParam(name = "rating", required = false) Integer rating,
+        @RequestParam(name = "price_range", required = false) Integer priceRange) {
+        return ResponseBuilder.buildOkResponse(restaurantService.findRestaurantsByRatingAndPriceRange(rating, priceRange));
+    }
 
 
     // /**
@@ -53,12 +53,12 @@ public class RestaurantApiController {
     //  *
     //  * @see RestaurantService#findRestaurantWithAverageRatingById(int) for details on retrieving restaurant information.
     //  */
-    // @GetMapping("/api/restaurants/{id}")
-    // public ResponseEntity<Object> getRestaurantById(@PathVariable int id) {
-    //     Optional<ApiRestaurantDTO> restaurantWithRatingOptional = restaurantService.findRestaurantWithAverageRatingById(id);
-    //     if (!restaurantWithRatingOptional.isPresent()) throw new ResourceNotFoundException(String.format("Restaurant with id %d not found", id));
-    //     return ResponseBuilder.buildOkResponse(restaurantWithRatingOptional.get());
-    // }
+    @GetMapping("/api/restaurants/{id}")
+    public ResponseEntity<Object> getRestaurantById(@PathVariable int id) {
+        Optional<ApiRestaurantDTO> restaurantWithRatingOptional = restaurantService.findRestaurantWithAverageRatingById(id);
+        if (!restaurantWithRatingOptional.isPresent()) throw new ResourceNotFoundException(String.format("Restaurant with id %d not found", id));
+        return ResponseBuilder.buildOkResponse(restaurantWithRatingOptional.get());
+    }
 
 
     // /**
@@ -67,23 +67,23 @@ public class RestaurantApiController {
     //  * @param restaurant The data for the new restaurant.
     //  * @return ResponseEntity with the created restaurant's data, or a BadRequestException if creation fails.
     //  */
-    // @PostMapping("/api/restaurants")
-    // public ResponseEntity<Object> createRestaurant(@RequestBody @Valid ApiCreateRestaurantDTO restaurant, BindingResult result) {
-    //     // Check for validation errors first
-    //     if (result.hasErrors()) {
-    //         throw new BadRequestException("Invalid or missing parameters for restaurant creation");
-    //     }        
-    //     try {
-    //         Optional<ApiCreateRestaurantDTO> createdRestaurant = restaurantService.createRestaurant(restaurant);
-    //         if (createdRestaurant.isPresent()) {
-    //             return ResponseBuilder.buildCreatedResponse(createdRestaurant.get());
-    //         } else {
-    //             throw new BadRequestException("Failed to create restaurant. User may not exist or invalid data provided");
-    //         }
-    //     } catch (Exception e) {
-    //         throw new BadRequestException("Error creating restaurant: " + e.getMessage());
-    //     }
-    // }
+    @PostMapping("/api/restaurants")
+    public ResponseEntity<Object> createRestaurant(@RequestBody @Valid ApiCreateRestaurantDTO restaurant, BindingResult result) {
+        // Check for validation errors first
+        if (result.hasErrors()) {
+            throw new BadRequestException("Invalid or missing parameters for restaurant creation");
+        }        
+        try {
+            Optional<ApiCreateRestaurantDTO> createdRestaurant = restaurantService.createRestaurant(restaurant);
+            if (createdRestaurant.isPresent()) {
+                return ResponseBuilder.buildCreatedResponse(createdRestaurant.get());
+            } else {
+                throw new BadRequestException("Failed to create restaurant. User may not exist or invalid data provided");
+            }
+        } catch (Exception e) {
+            throw new BadRequestException("Error creating restaurant: " + e.getMessage());
+        }
+    }
 
 
     // /**
@@ -94,35 +94,35 @@ public class RestaurantApiController {
     //  * @param result                BindingResult for validation.
     //  * @return ResponseEntity with the updated restaurant's data
     //  */
-    // @PutMapping("/api/restaurants/{id}")
-    // public ResponseEntity<Object> updateRestaurant(
-    //     @PathVariable("id") int id, 
-    //     @Validated(ApiCreateRestaurantDTO.UpdateValidation.class) @RequestBody ApiCreateRestaurantDTO restaurantUpdateData, 
-    //     BindingResult result) {
+    @PutMapping("/api/restaurants/{id}")
+    public ResponseEntity<Object> updateRestaurant(
+        @PathVariable("id") int id, 
+        @Validated(ApiCreateRestaurantDTO.UpdateValidation.class) @RequestBody ApiCreateRestaurantDTO restaurantUpdateData, 
+        BindingResult result) {
         
-    //     if (result.hasErrors()) {
-    //         // Create detailed validation error message
-    //         StringBuilder errorDetails = new StringBuilder();
-    //         result.getFieldErrors().forEach(error -> {
-    //             errorDetails.append(error.getField()).append(": ").append(error.getDefaultMessage()).append("; ");
-    //         });
-    //         throw new ValidationException(errorDetails.toString().trim());
-    //     }        
+        if (result.hasErrors()) {
+            // Create detailed validation error message
+            StringBuilder errorDetails = new StringBuilder();
+            result.getFieldErrors().forEach(error -> {
+                errorDetails.append(error.getField()).append(": ").append(error.getDefaultMessage()).append("; ");
+            });
+            throw new ValidationException(errorDetails.toString().trim());
+        }        
         
-    //     try {
-    //         Optional<ApiCreateRestaurantDTO> updatedRestaurant = restaurantService.updateRestaurant(id, restaurantUpdateData);
+        try {
+            Optional<ApiCreateRestaurantDTO> updatedRestaurant = restaurantService.updateRestaurant(id, restaurantUpdateData);
             
-    //         if (updatedRestaurant.isPresent()) {
-    //             return ResponseBuilder.buildOkResponse(updatedRestaurant.get());
-    //         } else {
-    //             throw new ResourceNotFoundException("Restaurant with id " + id + " not found");
-    //         }
-    //     } catch (ResourceNotFoundException e) {
-    //         throw e;  // Re-throw to be handled by GlobalExceptionHandler
-    //     } catch (Exception e) {
-    //         throw new BadRequestException("Error updating restaurant: " + e.getMessage());
-    //     }
-    // }
+            if (updatedRestaurant.isPresent()) {
+                return ResponseBuilder.buildOkResponse(updatedRestaurant.get());
+            } else {
+                throw new ResourceNotFoundException("Restaurant with id " + id + " not found");
+            }
+        } catch (ResourceNotFoundException e) {
+            throw e;  // Re-throw to be handled by GlobalExceptionHandler
+        } catch (Exception e) {
+            throw new BadRequestException("Error updating restaurant: " + e.getMessage());
+        }
+    }
 
 
     /**

@@ -26,7 +26,7 @@ public class ProductService {
      * @return List of ApiProductDTO for the restaurant
      */
     public List<ApiProductDTO> findProductsByRestaurantId(int restaurantId) {
-        List<Product> products = productRepository.findProductsByRestaurantId(restaurantId);
+        List<Product> products = productRepository.findByRestaurant_Id(restaurantId);
         List<ApiProductDTO> productDTOs = new ArrayList<>();
         
         for (Product product : products) {

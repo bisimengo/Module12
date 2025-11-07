@@ -30,44 +30,44 @@ public class OrderApiController {
     // POST /api/order/{order_id}/status endpoint
     // Path parameter: order id (required)
     // Returns the new status
-    // @PostMapping("/api/order/{order_id}/status")
-    // public ResponseEntity<Object> updateOrderStatus(
-    //     @PathVariable("order_id") int orderId,
-    //     @Valid @RequestBody ApiOrderStatusDTO apiOrderStatusDTO,
-    //     BindingResult bindingResult) {
+    @PostMapping("/api/order/{order_id}/status")
+    public ResponseEntity<Object> updateOrderStatus(
+        @PathVariable("order_id") int orderId,
+        @Valid @RequestBody ApiOrderStatusDTO apiOrderStatusDTO,
+        BindingResult bindingResult) {
     
-    // if (bindingResult.hasErrors()) {
-    //     ApiErrorDTO apiErrorDTO = ResponseBuilder.buildValidationErrorResponse(bindingResult);
-    //     return ResponseBuilder.buildBadRequestResponse(apiErrorDTO);
-    // }
+    if (bindingResult.hasErrors()) {
+        ApiErrorDTO apiErrorDTO = ResponseBuilder.buildValidationErrorResponse(bindingResult);
+        return ResponseBuilder.buildBadRequestResponse(apiErrorDTO);
+    }
     
-    // try {
-    //     ApiOrderStatusDTO updatedStatus = orderService.updateOrderStatus(orderId, apiOrderStatusDTO);
-    //     return ResponseBuilder.buildDirectResponse(updatedStatus);
-    // } catch (ResourceNotFoundException e) {
-    //     throw new ResourceNotFoundException("Order with id " + orderId + " not found");
-    // } catch (InvalidStatusTransitionException e) {
-    //     throw new InvalidStatusTransitionException("Invalid status transition: " + e.getMessage());
-    // }
-    // }
+    try {
+        ApiOrderStatusDTO updatedStatus = orderService.updateOrderStatus(orderId, apiOrderStatusDTO);
+        return ResponseBuilder.buildDirectResponse(updatedStatus);
+    } catch (ResourceNotFoundException e) {
+        throw new ResourceNotFoundException("Order with id " + orderId + " not found");
+    } catch (InvalidStatusTransitionException e) {
+        throw new InvalidStatusTransitionException("Invalid status transition: " + e.getMessage());
+    }
+}
 
-//     // GET /api/orders
-//         // ● Returns a list of orders given a user type and id
-//         // ● Query parameter ‘type’: customer, restaurant or courier (required)
-//         // ● Query parameter ‘id’: id of customer, restaurant or courier (required) * Not the id of the
-//         // users table entry
-//         // ● Example: /api/orders?type=customer&id=7
-//    @GetMapping("/api/orders")
-//     public ResponseEntity<Object> getOrdersByUserTypeAndId(
-//         @RequestParam("type") String userType,
-//         @RequestParam("id") int userId) {
+    // GET /api/orders
+        // ● Returns a list of orders given a user type and id
+        // ● Query parameter ‘type’: customer, restaurant or courier (required)
+        // ● Query parameter ‘id’: id of customer, restaurant or courier (required) * Not the id of the
+        // users table entry
+        // ● Example: /api/orders?type=customer&id=7
+   @GetMapping("/api/orders")
+    public ResponseEntity<Object> getOrdersByUserTypeAndId(
+        @RequestParam("type") String userType,
+        @RequestParam("id") int userId) {
     
-//     List<ApiOrderDTO> orders = orderService.getOrdersByUserTypeAndId(userType, userId);
-//     if (orders.isEmpty()) {
-//         throw new ResourceNotFoundException("No orders found for " + userType + " with id " + userId);
-//     }
-//     return ResponseBuilder.buildOkResponse(orders);
-// }
+    List<ApiOrderDTO> orders = orderService.getOrdersByUserTypeAndId(userType, userId);
+    if (orders.isEmpty()) {
+        throw new ResourceNotFoundException("No orders found for " + userType + " with id " + userId);
+    }
+    return ResponseBuilder.buildOkResponse(orders);
+}
 
     // POST /api/orders
     // Creates a new order
@@ -84,8 +84,5 @@ public class OrderApiController {
     return ResponseBuilder.buildOkResponse(createdOrder);
 }
 
-
-      
-
-
+   
 }
