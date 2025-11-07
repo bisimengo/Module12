@@ -2,11 +2,13 @@ package com.rocketFoodDelivery.rocketFood.service;
 
 import com.rocketFoodDelivery.rocketFood.models.Product;
 import com.rocketFoodDelivery.rocketFood.repository.ProductRepository;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiProductDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 
 @Service
 public class ProductService {
@@ -21,10 +23,21 @@ public class ProductService {
     /**
      * Finds all products for a specific restaurant
      * @param restaurantId The ID of the restaurant
-     * @return List of products for the restaurant
+     * @return List of ApiProductDTO for the restaurant
      */
-    public List<Product> findProductsByRestaurantId(int restaurantId) {
-        return productRepository.findProductsByRestaurantId(restaurantId);
+    public List<ApiProductDTO> findProductsByRestaurantId(int restaurantId) {
+        List<Product> products = productRepository.findProductsByRestaurantId(restaurantId);
+        List<ApiProductDTO> productDTOs = new ArrayList<>();
+        
+        for (Product product : products) {
+            ApiProductDTO dto = new ApiProductDTO();
+            dto.setId(product.getId());
+            dto.setName(product.getName());
+            dto.setCost(product.getCost());
+            productDTOs.add(dto);
+        }
+        
+        return productDTOs;
     }
     
     /**

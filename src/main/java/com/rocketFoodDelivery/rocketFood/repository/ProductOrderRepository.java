@@ -29,4 +29,12 @@ public interface ProductOrderRepository extends JpaRepository<ProductOrder, Inte
     List<ProductOrder> findByProductId(int id);
     @Override
     void deleteById(Integer productOrderId);
+    @Query(nativeQuery = true, value = """
+        SELECT po.product_id, p.name as product_name, po.quantity, p.cost as unit_cost,
+               (po.quantity * p.cost) as total_cost
+        FROM product_orders po
+        JOIN products p ON po.product_id = p.id
+        WHERE po.order_id = :orderId
+        """)
+    List<Object[]> findProductsByOrderId(@Param("orderId") int orderId);
 }

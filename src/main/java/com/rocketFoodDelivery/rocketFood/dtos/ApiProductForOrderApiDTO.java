@@ -1,15 +1,27 @@
 package com.rocketFoodDelivery.rocketFood.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-// the order api has a prodect. and this is for that
+@AllArgsConstructor
+@NoArgsConstructor
 public class ApiProductForOrderApiDTO {
-    int id;
-    String product_name;
-    int quantity;
-    int unit_cost;
-    int total_cost;
+    @JsonProperty("product_id")
+    private int productId;
+    
+    @JsonProperty("product_name")
+    private String productName;
+    
+    private int quantity;
+    
+    @JsonProperty("unit_cost")
+    private int unitCost;
+    
+    @JsonProperty("total_cost")
+    private int totalCost;
 }

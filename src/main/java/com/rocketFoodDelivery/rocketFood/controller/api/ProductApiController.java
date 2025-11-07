@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -34,9 +35,13 @@ public class ProductApiController {
      * @return A list of products for the specified restaurant.
      */
     @GetMapping("/api/products")
-    public ResponseEntity<Object> getProductsByRestaurantId(@RequestParam("restaurant") int restaurantId) {
+    public ResponseEntity<List<ApiProductDTO>> getProductsByRestaurantId(@RequestParam("restaurant") int restaurantId) {
         try {
-            return ResponseBuilder.buildOkResponse(productService.findProductsByRestaurantId(restaurantId));
+            List<ApiProductDTO> products = productService.findProductsByRestaurantId(restaurantId);
+            if (products.isEmpty()) {
+                throw new ResourceNotFoundException("Products for restaurant with id " + restaurantId + " not found");
+            }
+            return new ResponseEntity<>(products, HttpStatus.OK);
         } catch (Exception e) {
             throw new ResourceNotFoundException("Products for restaurant with id " + restaurantId + " not found");
         }

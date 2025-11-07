@@ -35,14 +35,34 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorDTO> handleBadRequestException(BadRequestException ex) {
         ApiErrorDTO response = new ApiErrorDTO();
         response.setError("Invalid or missing parameters");
-        response.setDetails(null);  // Set to null as shown in expected response
+        response.setDetails(null);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    // public static ResponseEntity<Object> buildErrorResponse(String message) {
-    //     ApiErrorDTO response = new ApiErrorDTO();
-    //     response.setError("Error");
-    //     response.setDetails(message);
-    //     return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-    // }
+    @ExceptionHandler(InvalidStatusTransitionException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ApiErrorDTO> handleInvalidStatusTransitionException(InvalidStatusTransitionException ex) {
+        ApiErrorDTO response = new ApiErrorDTO();
+        response.setError("Invalid or missing parameters");
+        response.setDetails(null);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ApiErrorDTO> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ApiErrorDTO response = new ApiErrorDTO();
+        response.setError("Invalid or missing parameters");
+        response.setDetails(ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<ApiErrorDTO> handleRuntimeException(RuntimeException ex) {
+        ApiErrorDTO response = new ApiErrorDTO();
+        response.setError("Internal server error");
+        response.setDetails(ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

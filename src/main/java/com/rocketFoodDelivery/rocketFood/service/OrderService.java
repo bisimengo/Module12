@@ -5,16 +5,16 @@ import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderRequestDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateOrderDTO; 
 import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderStatusDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiProductForOrderApiDTO;
-// import com.rocketFoodDelivery.rocketFood.entities.Order;
-// import com.rocketFoodDelivery.rocketFood.entities.User;
-// import com.rocketFoodDelivery.rocketFood.entities.Restaurant;
-// import com.rocketFoodDelivery.rocketFood.entities.Product;
-// import com.rocketFoodDelivery.rocketFood.entities.OrderItem;
+import com.rocketFoodDelivery.rocketFood.models.Order;
+import com.rocketFoodDelivery.rocketFood.models.OrderStatus;
 import com.rocketFoodDelivery.rocketFood.repository.OrderRepository;
 import com.rocketFoodDelivery.rocketFood.repository.UserRepository;
 import com.rocketFoodDelivery.rocketFood.repository.RestaurantRepository;
 import com.rocketFoodDelivery.rocketFood.repository.ProductRepository;
+import com.rocketFoodDelivery.rocketFood.repository.OrderStatusRepository;
+import com.rocketFoodDelivery.rocketFood.repository.ProductOrderRepository;
 import com.rocketFoodDelivery.rocketFood.exception.ResourceNotFoundException;
+import com.rocketFoodDelivery.rocketFood.exception.InvalidStatusTransitionException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,14 +34,19 @@ public class OrderService {
     private final UserRepository userRepository;
     private final RestaurantRepository restaurantRepository;
     private final ProductRepository productRepository;
+    private final OrderStatusRepository orderStatusRepository;
+    private final ProductOrderRepository productOrderRepository;
     
     @Autowired
     public OrderService(OrderRepository orderRepository, UserRepository userRepository,
-                       RestaurantRepository restaurantRepository, ProductRepository productRepository) {
+                       RestaurantRepository restaurantRepository, ProductRepository productRepository,
+                       OrderStatusRepository orderStatusRepository, ProductOrderRepository productOrderRepository) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.restaurantRepository = restaurantRepository;
         this.productRepository = productRepository;
+        this.orderStatusRepository = orderStatusRepository;
+        this.productOrderRepository = productOrderRepository;
     }
 
     /**
@@ -151,47 +156,122 @@ public class OrderService {
     }
 
     /**
-     * Updates order status
+     * Updates order status and returns the new status
      */
     @Transactional
     public ApiOrderStatusDTO updateOrderStatus(int orderId, ApiOrderStatusDTO statusDTO) {
+        // 1. Check if order exists
         Optional<Order> orderOpt = orderRepository.findById(orderId);
         if (orderOpt.isEmpty()) {
-            throw new ResourceNotFoundException("Order not found");
+            throw new ResourceNotFoundException("Order with id " + orderId + " not found");
         }
         
         Order order = orderOpt.get();
-        order.setStatus(statusDTO.getStatus());
+        
+        // 2. Validate status transition (optional - add business logic if needed)
+        String newStatus = statusDTO.getStatus().toLowerCase();
+        if (!isValidStatusTransition(order.getOrder_status().getName(), newStatus)) {
+            throw new InvalidStatusTransitionException("Cannot transition from " + 
+                order.getOrder_status().getName() + " to " + newStatus);
+        }
+        
+        // 3. Find the status entity
+        Optional<OrderStatus> newStatusEntity = orderStatusRepository.findByName(newStatus);
+        if (newStatusEntity.isEmpty()) {
+            throw new InvalidStatusTransitionException("Invalid status: " + newStatus);
+        }
+        
+        // 4. Update the order
+        order.setOrder_status(newStatusEntity.get());
         orderRepository.save(order);
         
-        return new ApiOrderStatusDTO(order.getId(), order.getStatus());
+        // 5. Return just the status (not wrapped in message/data)
+        return new ApiOrderStatusDTO(newStatus);
     }
-
+    
     /**
-     * Gets orders by user type and ID
+     * Validates if status transition is allowed
+     */
+    private boolean isValidStatusTransition(String currentStatus, String newStatus) {
+        // Add your business logic here for valid transitions
+        // For example:
+        switch (currentStatus.toLowerCase()) {
+            case "pending":
+                return newStatus.equals("in_progress") || newStatus.equals("cancelled");
+            case "in_progress":
+                return newStatus.equals("delivered") || newStatus.equals("cancelled");
+            case "delivered":
+            case "cancelled":
+                return false; // Cannot change from final states
+            default:
+                return true; // Allow any transition for unknown states
+        }
+    }
+    
+    /**
+     * Gets orders by user type and ID with complete details
      */
     public List<ApiOrderDTO> getOrdersByUserTypeAndId(String userType, int userId) {
-        List<Order> orders;
+        List<Object[]> orderData;
         
         switch (userType.toLowerCase()) {
             case "customer":
-                orders = orderRepository.findByCustomerId(userId);
+                orderData = orderRepository.findOrdersWithDetailsByCustomerId(userId);
                 break;
             case "restaurant":
-                orders = orderRepository.findByRestaurantId(userId);
+                orderData = orderRepository.findOrdersWithDetailsByRestaurantId(userId);
                 break;
             case "courier":
-                orders = orderRepository.findByCourierId(userId);
+                orderData = orderRepository.findOrdersWithDetailsByCourierId(userId);
                 break;
             default:
                 throw new IllegalArgumentException("Invalid user type: " + userType);
         }
         
-        return orders.stream()
+        return orderData.stream()
             .map(this::convertToApiOrderDTO)
             .collect(Collectors.toList());
     }
 
+    /**
+     * Helper method to convert Object[] result to ApiOrderDTO
+     */
+    private ApiOrderDTO convertToApiOrderDTO(Object[] row) {
+        int orderId = ((Number) row[0]).intValue();
+        int customerId = ((Number) row[1]).intValue();
+        int restaurantId = ((Number) row[2]).intValue();
+        Integer courierId = row[3] != null ? ((Number) row[3]).intValue() : null;
+        String customerName = (String) row[4];
+        String customerAddress = (String) row[5];
+        String restaurantName = (String) row[6];
+        String restaurantAddress = (String) row[7];
+        String courierName = (String) row[8];
+        String status = (String) row[9];
+        
+        // Get products for this order
+        List<Object[]> productData = productOrderRepository.findProductsByOrderId(orderId);
+        List<ApiProductForOrderApiDTO> products = productData.stream()
+            .map(productRow -> new ApiProductForOrderApiDTO(
+                ((Number) productRow[0]).intValue(), // product_id
+                (String) productRow[1],              // product_name
+                ((Number) productRow[2]).intValue(), // quantity
+                ((Number) productRow[3]).intValue(), // unit_cost
+                ((Number) productRow[4]).intValue()  // total_cost
+            ))
+            .collect(Collectors.toList());
+        
+        // Calculate total cost
+        long totalCost = products.stream()
+            .mapToLong(ApiProductForOrderApiDTO::getTotalCost)
+            .sum();
+        
+        return new ApiOrderDTO(
+            orderId, customerId, customerName, customerAddress,
+            restaurantId, restaurantName, restaurantAddress,
+            courierId, courierName, status, products, totalCost
+        );
+    }
+    
     // /**
     //  * Helper method to convert Order entity to ApiOrderDTO
     //  */
