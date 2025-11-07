@@ -7,14 +7,22 @@ import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderStatusDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiProductForOrderApiDTO;
 import com.rocketFoodDelivery.rocketFood.models.Order;
 import com.rocketFoodDelivery.rocketFood.models.OrderStatus;
+import com.rocketFoodDelivery.rocketFood.models.UserEntity;          // ✅ Missing import
+import com.rocketFoodDelivery.rocketFood.models.Restaurant;    // ✅ Missing import
+import com.rocketFoodDelivery.rocketFood.models.Product;       // ✅ Missing import
+import com.rocketFoodDelivery.rocketFood.models.Customer;      // ✅ Missing import
+import com.rocketFoodDelivery.rocketFood.models.Courier;       // ✅ Missing import
 import com.rocketFoodDelivery.rocketFood.repository.OrderRepository;
 import com.rocketFoodDelivery.rocketFood.repository.UserRepository;
 import com.rocketFoodDelivery.rocketFood.repository.RestaurantRepository;
 import com.rocketFoodDelivery.rocketFood.repository.ProductRepository;
 import com.rocketFoodDelivery.rocketFood.repository.OrderStatusRepository;
 import com.rocketFoodDelivery.rocketFood.repository.ProductOrderRepository;
+import com.rocketFoodDelivery.rocketFood.repository.CustomerRepository;
 import com.rocketFoodDelivery.rocketFood.exception.ResourceNotFoundException;
 import com.rocketFoodDelivery.rocketFood.exception.InvalidStatusTransitionException;
+import com.rocketFoodDelivery.rocketFood.exception.InsufficientInventoryException;  // ✅ Missing import
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,11 +65,12 @@ public class OrderService {
      * @param orderRequest The order request containing customer, restaurant, and product details
      * @return ApiOrderDTO with complete order information
      */
+    /*
     @Transactional
     public ApiOrderDTO addOrder(ApiOrderRequestDTO orderRequest) {
         try {
             // 1. Validate customer exists
-            Optional<User> customer = userRepository.findById(orderRequest.getCustomerId());
+            Optional<UserEntity> customer = userRepository.findById(orderRequest.getCustomerId());
             if (customer.isEmpty()) {
                 throw new RuntimeException("Customer not found");
             }
@@ -80,7 +89,7 @@ public class OrderService {
             
             // Assign courier if provided
             if (orderRequest.getCourierId() != null) {
-                Optional<User> courier = userRepository.findById(orderRequest.getCourierId());
+                Optional<UserEntity> courier = userRepository.findById(orderRequest.getCourierId());
                 courier.ifPresent(newOrder::setCourier);
             }
 
@@ -139,6 +148,7 @@ public class OrderService {
             throw new RuntimeException("Error creating order: " + e.getMessage(), e);
         }
     }
+    */
 
     /**
      * Creates a new order using ApiCreateOrderDTO
@@ -156,13 +166,12 @@ public class OrderService {
                 throw new ResourceNotFoundException("Restaurant with id " + createOrderDTO.getRestaurantId() + " not found");
             }
 
-            // 3. Validate products exist and have sufficient inventory
+            // 3. Validate products exist
             for (ApiCreateOrderDTO.ProductOrderDTO productOrder : createOrderDTO.getProducts()) {
                 Optional<Product> product = productRepository.findById(productOrder.getId());
                 if (product.isEmpty()) {
                     throw new ResourceNotFoundException("Product with id " + productOrder.getId() + " not found");
                 }
-                // Add inventory check if needed
             }
 
             // 4. Create the order using repository methods
@@ -197,14 +206,6 @@ public class OrderService {
         } catch (Exception e) {
             throw new RuntimeException("Error creating order: " + e.getMessage());
         }
-    }
-
-    /**
-     * Creates a new order (wrapper for existing addOrder method)
-     */
-    @Transactional
-    public ApiOrderDTO createOrder(ApiOrderRequestDTO orderRequest) {
-        return addOrder(orderRequest); // Use your existing addOrder method
     }
 
     /**

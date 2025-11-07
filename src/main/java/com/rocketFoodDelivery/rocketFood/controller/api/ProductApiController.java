@@ -1,21 +1,16 @@
 package com.rocketFoodDelivery.rocketFood.controller.api;
 
-import com.rocketFoodDelivery.rocketFood.dtos.ApiProductForOrderApiDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiProductDTO;
-import com.rocketFoodDelivery.rocketFood.dtos.ApiErrorDTO;
 import com.rocketFoodDelivery.rocketFood.service.ProductService;
 import com.rocketFoodDelivery.rocketFood.util.ResponseBuilder;
-import com.rocketFoodDelivery.rocketFood.exception.*;
-
-import jakarta.validation.Valid;
+import com.rocketFoodDelivery.rocketFood.exception.ResourceNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
+import org.springframework.http.HttpStatus;  // Add this line
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class ProductApiController {
@@ -35,13 +30,13 @@ public class ProductApiController {
      * @return A list of products for the specified restaurant.
      */
     @GetMapping("/api/products")
-    public ResponseEntity<List<ApiProductDTO>> getProductsByRestaurantId(@RequestParam("restaurant") int restaurantId) {
+    public ResponseEntity<Object> getProductsByRestaurantId(@RequestParam("restaurant") int restaurantId) {
         try {
             List<ApiProductDTO> products = productService.findProductsByRestaurantId(restaurantId);
             if (products.isEmpty()) {
                 throw new ResourceNotFoundException("Products for restaurant with id " + restaurantId + " not found");
             }
-            return new ResponseEntity<>(products, HttpStatus.OK);
+            return ResponseBuilder.buildDirectResponse(products); // No HttpStatus needed here
         } catch (Exception e) {
             throw new ResourceNotFoundException("Products for restaurant with id " + restaurantId + " not found");
         }

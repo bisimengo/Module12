@@ -3,6 +3,7 @@ package com.rocketFoodDelivery.rocketFood.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import jakarta.validation.Valid; 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
