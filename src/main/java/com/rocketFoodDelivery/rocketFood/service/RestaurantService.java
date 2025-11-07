@@ -212,9 +212,9 @@ public class RestaurantService {
     @Transactional
     public Optional<ApiCreateRestaurantDTO> updateRestaurant(int id, ApiCreateRestaurantDTO updatedRestaurantDTO) {
         try {
-            // 1. Check if restaurant exists
-            Optional<Restaurant> existingRestaurant = restaurantRepository.findRestaurantById(id);
-            if (existingRestaurant.isEmpty()) {
+            // 1. Check if restaurant exists first
+            List<Object[]> existingRestaurantData = restaurantRepository.findRestaurantWithFullDetailsById(id);
+            if (existingRestaurantData.isEmpty()) {
                 return Optional.empty();
             }
 
@@ -226,20 +226,37 @@ public class RestaurantService {
                 updatedRestaurantDTO.getPhone()
             );
 
-            // 3. Retrieve the updated restaurant
-            Optional<Restaurant> updatedRestaurant = restaurantRepository.findRestaurantById(id);
-            if (updatedRestaurant.isPresent()) {
-                Restaurant restaurant = updatedRestaurant.get();
+            // 3. Get the updated restaurant data with full details
+            List<Object[]> updatedRestaurantData = restaurantRepository.findRestaurantWithFullDetailsById(id);
+            if (!updatedRestaurantData.isEmpty()) {
+                Object[] row = updatedRestaurantData.get(0);
                 
-                // 4. Return the updated restaurant data as DTO
+                // Extract data from the query result
+                int restaurantId = ((Number) row[0]).intValue();
+                String name = (String) row[1];
+                int priceRange = ((Number) row[2]).intValue();
+                String phone = (String) row[3];
+                String email = (String) row[4];
+                int userId = ((Number) row[5]).intValue();
+                
+                // Address data
+                int addressId = ((Number) row[6]).intValue();
+                String streetAddress = (String) row[7];
+                String city = (String) row[8];
+                String postalCode = (String) row[9];
+                
+                // Create address DTO
+                ApiAddressDTO addressDTO = new ApiAddressDTO(addressId, streetAddress, city, postalCode);
+                
+                // Return the complete restaurant data
                 return Optional.of(new ApiCreateRestaurantDTO(
-                    restaurant.getId(),
-                    restaurant.getName(),           
-                    restaurant.getUserEntity().getId(),
-                    null,
-                    restaurant.getPriceRange(),
-                    restaurant.getPhone(),
-                    restaurant.getEmail()
+                    restaurantId,
+                    name,
+                    userId,
+                    addressDTO,
+                    priceRange,
+                    phone,
+                    email
                 ));
             }
 

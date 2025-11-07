@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -59,46 +60,30 @@ public class RestaurantApiController {
     // }
 
 
-    /**
-     * Creates a new restaurant. (POST)
-     *
-     * @param restaurant The data for the new restaurant.
-     * @return ResponseEntity with the created restaurant's data, or a BadRequestException if creation fails.
-     */
-    @PostMapping("/api/restaurants")
-    public ResponseEntity<Object> createRestaurant(@RequestBody @Valid ApiCreateRestaurantDTO restaurant, BindingResult result) {
-        // Check for validation errors first
-        if (result.hasErrors()) {
-            throw new BadRequestException("Invalid or missing parameters for restaurant creation");
-        }        
-        try {
-            Optional<ApiCreateRestaurantDTO> createdRestaurant = restaurantService.createRestaurant(restaurant);
-            if (createdRestaurant.isPresent()) {
-                return ResponseBuilder.buildCreatedResponse(createdRestaurant.get());
-            } else {
-                throw new BadRequestException("Failed to create restaurant. User may not exist or invalid data provided");
-            }
-        } catch (Exception e) {
-            throw new BadRequestException("Error creating restaurant: " + e.getMessage());
-        }
-    }
-
-
     // /**
-    //  * Deletes a restaurant by ID.(DELETE)
+    //  * Creates a new restaurant. (POST)
     //  *
-    //  * @param id The ID of the restaurant to delete.
-    //  * @return ResponseEntity with a success message, or a ResourceNotFoundException if the restaurant is not found.
+    //  * @param restaurant The data for the new restaurant.
+    //  * @return ResponseEntity with the created restaurant's data, or a BadRequestException if creation fails.
     //  */
-    // @DeleteMapping("/api/restaurants/{id}")
-    // public ResponseEntity<Object> deleteRestaurant(@PathVariable int id) {
+    // @PostMapping("/api/restaurants")
+    // public ResponseEntity<Object> createRestaurant(@RequestBody @Valid ApiCreateRestaurantDTO restaurant, BindingResult result) {
+    //     // Check for validation errors first
+    //     if (result.hasErrors()) {
+    //         throw new BadRequestException("Invalid or missing parameters for restaurant creation");
+    //     }        
     //     try {
-    //         restaurantService.deleteRestaurant(id);
-    //         return ResponseBuilder.buildOkResponse("Restaurant deleted successfully");
+    //         Optional<ApiCreateRestaurantDTO> createdRestaurant = restaurantService.createRestaurant(restaurant);
+    //         if (createdRestaurant.isPresent()) {
+    //             return ResponseBuilder.buildCreatedResponse(createdRestaurant.get());
+    //         } else {
+    //             throw new BadRequestException("Failed to create restaurant. User may not exist or invalid data provided");
+    //         }
     //     } catch (Exception e) {
-    //         throw new ResourceNotFoundException("Restaurant with id " + id + " not found");
+    //         throw new BadRequestException("Error creating restaurant: " + e.getMessage());
     //     }
     // }
+
 
     // /**
     //  * Updates an existing restaurant by ID.(PUT)
@@ -109,7 +94,11 @@ public class RestaurantApiController {
     //  * @return ResponseEntity with the updated restaurant's data
     //  */
     // @PutMapping("/api/restaurants/{id}")
-    // public ResponseEntity<Object> updateRestaurant(@PathVariable("id") int id, @Valid @RequestBody ApiCreateRestaurantDTO restaurantUpdateData, BindingResult result) {
+    // public ResponseEntity<Object> updateRestaurant(
+    //     @PathVariable("id") int id, 
+    //     @Validated(ApiCreateRestaurantDTO.UpdateValidation.class) @RequestBody ApiCreateRestaurantDTO restaurantUpdateData, 
+    //     BindingResult result) {
+        
     //     if (result.hasErrors()) {
     //         // Create detailed validation error message
     //         StringBuilder errorDetails = new StringBuilder();
@@ -127,11 +116,31 @@ public class RestaurantApiController {
     //         } else {
     //             throw new ResourceNotFoundException("Restaurant with id " + id + " not found");
     //         }
+    //     } catch (ResourceNotFoundException e) {
+    //         throw e;  // Re-throw to be handled by GlobalExceptionHandler
     //     } catch (Exception e) {
     //         throw new BadRequestException("Error updating restaurant: " + e.getMessage());
     //     }
     // }
 
-    
 
-   
+    /**
+     * Deletes a restaurant by ID.(DELETE)
+     *
+     * @param id The ID of the restaurant to delete.
+     * @return ResponseEntity with a success message, or a ResourceNotFoundException if the restaurant is not found.
+     */
+    @DeleteMapping("/api/restaurants/{id}")
+    public ResponseEntity<Object> deleteRestaurant(@PathVariable int id) {
+        try {
+            restaurantService.deleteRestaurant(id);
+            return ResponseBuilder.buildOkResponse("Restaurant deleted successfully");
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("Restaurant with id " + id + " not found");
+        }
+    }
+
+}
+
+
+

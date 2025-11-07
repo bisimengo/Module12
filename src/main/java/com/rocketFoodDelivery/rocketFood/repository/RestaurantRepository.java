@@ -100,7 +100,17 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
     @Query(nativeQuery = true, value = "SELECT LAST_INSERT_ID() AS id")
     int getLastInsertedId();
 
-
+    // TODO
+    //The native SQL query for the GET /api/restaurant/{id} route
+    @Query(nativeQuery = true, value = 
+        """
+        SELECT r.id, r.name, r.price_range, r.phone, r.email, r.user_id,
+               a.id as address_id, a.street_address, a.city, a.postal_code
+        FROM restaurants r 
+        JOIN addresses a ON r.address_id = a.id 
+        WHERE r.id = :restaurantId
+        """)
+    List<Object[]> findRestaurantWithFullDetailsById(@Param("restaurantId") int restaurantId);
 
     // TODO
     //The native SQL query for the DELETE /api/restaurants/{id} route

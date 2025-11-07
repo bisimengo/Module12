@@ -13,7 +13,8 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ApiCreateRestaurantDTO {
     private Integer id;           
-    @NotBlank(message = "Name is required")
+    
+    @NotBlank(message = "Name is required", groups = {CreateValidation.class, UpdateValidation.class})
     private String name;
     
     @NotNull(message = "User ID is required")
@@ -24,15 +25,19 @@ public class ApiCreateRestaurantDTO {
     @Valid
     private ApiAddressDTO address;  
     
-    @NotNull(message = "Price range is required")
+    @NotNull(message = "Price range is required", groups = {CreateValidation.class, UpdateValidation.class})
     @Min(value = 1, message = "Price range must be between 1 and 3")
     @Max(value = 3, message = "Price range must be between 1 and 3")
     @JsonProperty("price_range")
     private Integer priceRange;
     
-    @NotBlank(message = "Phone is required")
+    @NotBlank(message = "Phone is required", groups = {CreateValidation.class, UpdateValidation.class})
     private String phone; 
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     private String email;
+    
+    // Validation groups
+    public interface CreateValidation {}
+    public interface UpdateValidation {}
 }
