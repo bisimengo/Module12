@@ -3,7 +3,7 @@ package com.rocketFoodDelivery.rocketFood.controller.api;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderRequestDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderStatusDTO;
-import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateOrderDTO;  // Add this line
+import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateOrderDTO;  
 import com.rocketFoodDelivery.rocketFood.dtos.ApiErrorDTO;
 import com.rocketFoodDelivery.rocketFood.service.OrderService;
 import com.rocketFoodDelivery.rocketFood.util.ResponseBuilder;
@@ -17,6 +17,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 public class OrderApiController {
@@ -37,18 +41,11 @@ public class OrderApiController {
         BindingResult bindingResult) {
     
     if (bindingResult.hasErrors()) {
-        ApiErrorDTO apiErrorDTO = ResponseBuilder.buildValidationErrorResponse(bindingResult);
-        return ResponseBuilder.buildBadRequestResponse(apiErrorDTO);
+        throw new BadRequestException("Invalid or missing parameters");
     }
     
-    try {
-        ApiOrderStatusDTO updatedStatus = orderService.updateOrderStatus(orderId, apiOrderStatusDTO);
-        return ResponseBuilder.buildDirectResponse(updatedStatus);
-    } catch (ResourceNotFoundException e) {
-        throw new ResourceNotFoundException("Order with id " + orderId + " not found");
-    } catch (InvalidStatusTransitionException e) {
-        throw new InvalidStatusTransitionException("Invalid status transition: " + e.getMessage());
-    }
+    ApiOrderStatusDTO updatedStatus = orderService.updateOrderStatus(orderId, apiOrderStatusDTO);
+    return ResponseBuilder.buildDirectResponse(updatedStatus);
 }
 
     // GET /api/orders
@@ -84,5 +81,5 @@ public class OrderApiController {
     return ResponseBuilder.buildOkResponse(createdOrder);
 }
 
-   
 }
+

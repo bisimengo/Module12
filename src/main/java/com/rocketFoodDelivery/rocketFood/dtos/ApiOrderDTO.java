@@ -1,6 +1,7 @@
 package com.rocketFoodDelivery.rocketFood.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiProductForOrderApiDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

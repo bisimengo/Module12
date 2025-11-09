@@ -246,19 +246,18 @@ public class OrderService {
      * Validates if status transition is allowed
      */
     private boolean isValidStatusTransition(String currentStatus, String newStatus) {
-        // Add your business logic here for valid transitions
-        // For example:
-        switch (currentStatus.toLowerCase()) {
-            case "pending":
-                return newStatus.equals("in_progress") || newStatus.equals("cancelled");
-            case "in_progress":
-                return newStatus.equals("delivered") || newStatus.equals("cancelled");
-            case "delivered":
-            case "cancelled":
-                return false; // Cannot change from final states
-            default:
-                return true; // Allow any transition for unknown states
-        }
+    // Current logic might be rejecting valid transitions
+    switch (currentStatus.toLowerCase()) {
+        case "pending":
+            return newStatus.equals("in_progress") || newStatus.equals("cancelled");
+        case "in_progress":
+            return newStatus.equals("delivered") || newStatus.equals("cancelled");
+        case "delivered":
+        case "cancelled":
+            return false; // Cannot change from final states
+        default:
+            return true; // Allow any transition for unknown states
+    }
     }
     
     /**
