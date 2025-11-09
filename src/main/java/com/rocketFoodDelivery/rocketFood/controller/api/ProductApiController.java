@@ -34,6 +34,6 @@ public class ProductApiController {
         if (products.isEmpty()) {
             throw new ResourceNotFoundException("Products for restaurant with id " + restaurantId + " not found");
         }
-        return ResponseBuilder.buildDirectResponse(products);
+        return ResponseBuilder.buildOkResponse(products);
     }
 }

@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
 
+import com.google.common.collect.Collectors;
+
 @Service
 public class ProductService {
     
@@ -26,18 +28,10 @@ public class ProductService {
      * @return List of ApiProductDTO for the restaurant
      */
     public List<ApiProductDTO> findProductsByRestaurantId(int restaurantId) {
-        List<Product> products = productRepository.findByRestaurant_Id(restaurantId);
-        List<ApiProductDTO> productDTOs = new ArrayList<>();
-        
-        for (Product product : products) {
-            ApiProductDTO dto = new ApiProductDTO();
-            dto.setId(product.getId());
-            dto.setName(product.getName());
-            dto.setCost(product.getCost());
-            productDTOs.add(dto);
-        }
-        
-        return productDTOs;
+        List<Product> products = productRepository.findByRestaurantId(restaurantId);
+        return products.stream()
+            .map(this::convertToApiDTO)
+            .collect(Collectors.toList());
     }
     
     /**
@@ -74,5 +68,13 @@ public class ProductService {
      */
     public List<Product> findAll() {
         return productRepository.findAll();
+    }
+    
+    private ApiProductDTO convertToApiDTO(Product product) {
+        ApiProductDTO dto = new ApiProductDTO();
+        dto.setId(product.getId());
+        dto.setName(product.getName());
+        dto.setCost(product.getCost());
+        return dto;
     }
 }
