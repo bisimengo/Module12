@@ -61,7 +61,7 @@ public class RestaurantApiController {
         try {
             Optional<ApiCreateRestaurantDTO> createdRestaurant = restaurantService.createRestaurant(restaurant);
             if (createdRestaurant.isPresent()) {
-                return ResponseBuilder.buildCreatedResponse(createdRestaurant.get());
+                return ResponseBuilder.buildCreatedResponse(result);
             } else {
                 throw new BadRequestException("Failed to create restaurant. User may not exist or invalid data provided");
             }
