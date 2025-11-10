@@ -1,45 +1,46 @@
 package com.rocketFoodDelivery.rocketFood.dtos;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.util.List;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class ApiCreateOrderDTO {
-    @NotNull(message = "Restaurant ID is required")
-    @JsonProperty("restaurant_id")
-    private Integer restaurantId;
+    private int restaurantId;
+    private int customerId;
+    private List<ProductOrder> products;
     
-    @NotNull(message = "Customer ID is required")
-    @JsonProperty("customer_id")
-    private Integer customerId;
+    // Constructors
+    public ApiCreateOrderDTO() {}
     
-    @NotEmpty(message = "Products list cannot be empty")
-    @Valid
-    private List<ProductOrderDTO> products;
-    
-    @Getter
-    @Setter
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class ProductOrderDTO {
-        @NotNull(message = "Product ID is required")
-        @Positive(message = "Product ID must be positive")
-        private Integer id;
-        
-        @NotNull(message = "Quantity is required")
-        @Positive(message = "Quantity must be positive")
-        private Integer quantity;
+    public ApiCreateOrderDTO(int restaurantId, int customerId, List<ProductOrder> products) {
+        this.restaurantId = restaurantId;
+        this.customerId = customerId;
+        this.products = products;
     }
+    
+    // Inner class for products
+    public static class ProductOrder {
+        private int id;
+        private int quantity;
+        
+        public ProductOrder() {}
+        
+        public ProductOrder(int id, int quantity) {
+            this.id = id;
+            this.quantity = quantity;
+        }
+        
+        public int getId() { return id; }
+        public void setId(int id) { this.id = id; }
+        public int getQuantity() { return quantity; }
+        public void setQuantity(int quantity) { this.quantity = quantity; }
+    }
+    
+    // Getters and setters
+    public int getRestaurantId() { return restaurantId; }
+    public void setRestaurantId(int restaurantId) { this.restaurantId = restaurantId; }
+    
+    public int getCustomerId() { return customerId; }
+    public void setCustomerId(int customerId) { this.customerId = customerId; }
+    
+    public List<ProductOrder> getProducts() { return products; }
+    public void setProducts(List<ProductOrder> products) { this.products = products; }
 }

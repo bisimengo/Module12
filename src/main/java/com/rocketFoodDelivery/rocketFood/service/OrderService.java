@@ -167,7 +167,7 @@ public class OrderService {
             }
 
             // 3. Validate products exist
-            for (ApiCreateOrderDTO.ProductOrderDTO productOrder : createOrderDTO.getProducts()) {
+            for (ApiCreateOrderDTO.ProductOrder productOrder : createOrderDTO.getProducts()) {
                 Optional<Product> product = productRepository.findById(productOrder.getId());
                 if (product.isEmpty()) {
                     throw new ResourceNotFoundException("Product with id " + productOrder.getId() + " not found");
@@ -185,7 +185,7 @@ public class OrderService {
             int newOrderId = orderRepository.getLastInsertedId();
 
             // 6. Add products to the order
-            for (ApiCreateOrderDTO.ProductOrderDTO productOrder : createOrderDTO.getProducts()) {
+            for (ApiCreateOrderDTO.ProductOrder productOrder : createOrderDTO.getProducts()) {
                 productOrderRepository.createProductOrder(
                     newOrderId,
                     productOrder.getId(),
