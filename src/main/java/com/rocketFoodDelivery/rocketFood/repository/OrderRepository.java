@@ -50,7 +50,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         JOIN addresses ca ON c.address_id = ca.id
         JOIN restaurants r ON o.restaurant_id = r.id
         JOIN addresses ra ON r.address_id = ra.id
-        LEFT JOIN couriers cr ON o.courier_id = cr.id
+        LEFT JOIN courier cr ON o.courier_id = cr.id
         JOIN order_statuses os ON o.status_id = os.id
         WHERE o.customer_id = :customerId
         """)
@@ -69,7 +69,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         JOIN addresses ca ON c.address_id = ca.id
         JOIN restaurants r ON o.restaurant_id = r.id
         JOIN addresses ra ON r.address_id = ra.id
-        LEFT JOIN couriers cr ON o.courier_id = cr.id
+        LEFT JOIN courier cr ON o.courier_id = cr.id
         JOIN order_statuses os ON o.status_id = os.id
         WHERE o.restaurant_id = :restaurantId
         """)
@@ -88,7 +88,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         JOIN addresses ca ON c.address_id = ca.id
         JOIN restaurants r ON o.restaurant_id = r.id
         JOIN addresses ra ON r.address_id = ra.id
-        LEFT JOIN couriers cr ON o.courier_id = cr.id
+        LEFT JOIN courier cr ON o.courier_id = cr.id
         JOIN order_statuses os ON o.status_id = os.id
         WHERE o.courier_id = :courierId
         """)
@@ -120,7 +120,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
         JOIN addresses ca ON c.address_id = ca.id
         JOIN restaurants r ON o.restaurant_id = r.id
         JOIN addresses ra ON r.address_id = ra.id
-        LEFT JOIN couriers cr ON o.courier_id = cr.id
+        LEFT JOIN courier cr ON o.courier_id = cr.id
         JOIN order_statuses os ON o.status_id = os.id
         WHERE o.id = :orderId
         """)
