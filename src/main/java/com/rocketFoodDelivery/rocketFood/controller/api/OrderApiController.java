@@ -56,9 +56,34 @@ public class OrderApiController {
         // ● Example: /api/orders?type=customer&id=7
    @GetMapping("/api/orders")
     public ResponseEntity<Object> getOrdersByUserTypeAndId(
-        @RequestParam("type") String userType,
-        @RequestParam("id") int userId) {
+        @RequestParam(value = "type", required = false) String userType,
+        @RequestParam(value = "id", required = false) String userIdStr) {
+
+    // Validate required parameters
+    if (userType == null || userType.trim().isEmpty()) {
+        throw new BadRequestException("Invalid or missing parameters");
+    }
     
+    if (userIdStr == null) {
+        throw new BadRequestException("Invalid or missing parameters");
+    }
+    
+    // Validate userType values
+    if (!userType.equals("customer") && !userType.equals("restaurant") && !userType.equals("courier")) {
+        throw new BadRequestException("Invalid or missing parameters");
+    }
+    
+    // Parse and validate userId
+    int userId;
+    try {
+        userId = Integer.parseInt(userIdStr);
+        if (userId <= 0) {
+            throw new BadRequestException("Invalid or missing parameters");
+        }
+    } catch (NumberFormatException e) {
+        throw new BadRequestException("Invalid or missing parameters");
+    }
+
     List<ApiOrderDTO> orders = orderService.getOrdersByUserTypeAndId(userType, userId);
     if (orders.isEmpty()) {
         throw new ResourceNotFoundException("No orders found for " + userType + " with id " + userId);

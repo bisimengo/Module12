@@ -44,47 +44,47 @@ public class OrderApiControllerTest {
 
     private ApiAddressDTO inputAddress;
 
-    // @Test
-    // public void testCreateOrder_Success() throws Exception {
-    //     List<ApiCreateOrderDTO.ProductOrder> products = Arrays.asList(
-    //         new ApiCreateOrderDTO.ProductOrder(2, 1),
-    //         new ApiCreateOrderDTO.ProductOrder(3, 3)
-    //     );
-    //     ApiCreateOrderDTO inputOrder = new ApiCreateOrderDTO(1, 3, products);
+    @Test
+    public void testCreateOrder_Success() throws Exception {
+        List<ApiCreateOrderDTO.ProductOrder> products = Arrays.asList(
+            new ApiCreateOrderDTO.ProductOrder(2, 1),
+            new ApiCreateOrderDTO.ProductOrder(3, 3)
+        );
+        ApiCreateOrderDTO inputOrder = new ApiCreateOrderDTO(1, 3, products);
 
-    //     ApiOrderDTO mockResponse = new ApiOrderDTO();
-    //     mockResponse.setId(1);
-    //     mockResponse.setCustomerId(3);
-    //     mockResponse.setRestaurantId(1);
-    //     mockResponse.setStatus("pending");
+        ApiOrderDTO mockResponse = new ApiOrderDTO();
+        mockResponse.setId(1);
+        mockResponse.setCustomerId(3);
+        mockResponse.setRestaurantId(1);
+        mockResponse.setStatus("pending");
 
-    //     when(orderService.createOrder(any(ApiCreateOrderDTO.class))).thenReturn(mockResponse);
+        when(orderService.createOrder(any(ApiCreateOrderDTO.class))).thenReturn(mockResponse);
 
-    //     mockMvc.perform(MockMvcRequestBuilders.post("/api/orders")
-    //             .contentType(MediaType.APPLICATION_JSON)
-    //             .content(new ObjectMapper().writeValueAsString(inputOrder)))
-    //             .andExpect(MockMvcResultMatchers.status().isOk())
-    //             .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Success"))
-    //             .andExpect(MockMvcResultMatchers.jsonPath("$.data.id").exists())
-    //             .andExpect(MockMvcResultMatchers.jsonPath("$.data.customer_id").value(3))
-    //             .andExpect(MockMvcResultMatchers.jsonPath("$.data.restaurant_id").value(1));
-    // }
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(inputOrder)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Success"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.customer_id").value(3))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.restaurant_id").value(1));
+    }
 
-    // @Test
-    // public void testCreateOrder_BadRequest() throws Exception {
-    //     // Invalid request body
-    //     ApiCreateOrderDTO invalidOrder = new ApiCreateOrderDTO(0, 0, null);
+    @Test
+    public void testCreateOrder_BadRequest() throws Exception {
+        // Invalid request body
+        ApiCreateOrderDTO invalidOrder = new ApiCreateOrderDTO(0, 0, null);
         
-    //     // Mock service to throw BadRequestException for invalid data
-    //     when(orderService.createOrder(any(ApiCreateOrderDTO.class)))
-    //         .thenThrow(new BadRequestException("Invalid or missing parameters"));
+        // Mock service to throw BadRequestException for invalid data
+        when(orderService.createOrder(any(ApiCreateOrderDTO.class)))
+            .thenThrow(new BadRequestException("Invalid or missing parameters"));
         
-    //     mockMvc.perform(MockMvcRequestBuilders.post("/api/orders")
-    //             .contentType(MediaType.APPLICATION_JSON)
-    //             .content(new ObjectMapper().writeValueAsString(invalidOrder)))
-    //             .andExpect(MockMvcResultMatchers.status().isBadRequest())
-    //             .andExpect(MockMvcResultMatchers.jsonPath("$.error").value("Invalid or missing parameters"));
-    // }
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/orders")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(invalidOrder)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error").value("Invalid or missing parameters"));
+    }
 
     @Test
     public void testGetOrdersByUserTypeAndId_Success() throws Exception {
@@ -118,16 +118,55 @@ public class OrderApiControllerTest {
 
     @Test
     public void testGetOrdersByUserTypeAndId_BadRequest() throws Exception {
-        // Mock service to throw BadRequestException for invalid parameters
-        when(orderService.getOrdersByUserTypeAndId(eq("invalid"), anyInt()))
-            .thenThrow(new BadRequestException("Invalid or missing parameters"));
-        
+        // Test missing type parameter
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders")
+                .param("id", "5"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error").value("Invalid or missing parameters"));
+
+        // Test missing id parameter
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders")
+                .param("type", "customer"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error").value("Invalid or missing parameters"));
+
         // Test invalid type parameter
         mockMvc.perform(MockMvcRequestBuilders.get("/api/orders")
                 .param("type", "invalid")
                 .param("id", "5"))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error").value("Invalid or missing parameters"));
+
+        // Test invalid id parameter (non-numeric)
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders")
+                .param("type", "customer")
+                .param("id", "invalid"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error").value("Invalid or missing parameters"));
+    }
+
+    @Test
+    public void testGetOrdersByUserTypeAndId_Restaurant() throws Exception {
+        List<ApiOrderDTO> mockOrders = Arrays.asList(createMockOrder(1, 2, "John Doe", "123 Main St", 1, "Fast Pub", "456 Oak Ave", 1, "Jane Smith", "pending", 2500));
+        when(orderService.getOrdersByUserTypeAndId("restaurant", 1)).thenReturn(mockOrders);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders")
+                .param("type", "restaurant")
+                .param("id", "1"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data[0].restaurant_id").value(1));
+    }
+
+    @Test
+    public void testGetOrdersByUserTypeAndId_Courier() throws Exception {
+        List<ApiOrderDTO> mockOrders = Arrays.asList(createMockOrder(1, 2, "John Doe", "123 Main St", 1, "Fast Pub", "456 Oak Ave", 1, "Jane Smith", "in transit", 3000));
+        when(orderService.getOrdersByUserTypeAndId("courier", 1)).thenReturn(mockOrders);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/orders")
+                .param("type", "courier")
+                .param("id", "1"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data[0].courier_id").value(1));
     }
 
     private ApiOrderDTO createMockOrder(int id, int customerId, String customerName, String customerAddress,
@@ -147,4 +186,5 @@ public class OrderApiControllerTest {
         order.setTotalCost(totalCost);
         return order;
     }
+    
 }
