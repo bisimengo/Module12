@@ -35,12 +35,12 @@ public class OrderApiController {
     // Path parameter: order id (required)
     // Returns the new status
     @PostMapping("/api/order/{order_id}/status")
-    public ResponseEntity<Object> updateOrderStatus(
-        @PathVariable("order_id") int orderId,
-        @RequestBody ApiOrderStatusDTO apiOrderStatusDTO) {
-    
-    ApiOrderStatusDTO updatedStatus = orderService.updateOrderStatus(orderId, apiOrderStatusDTO);
-    return ResponseBuilder.buildDirectResponse(updatedStatus);
+        public ResponseEntity<Object> updateOrderStatus(
+            @PathVariable("order_id") int orderId,
+            @RequestBody ApiOrderStatusDTO apiOrderStatusDTO) {
+        
+        ApiOrderStatusDTO updatedStatus = orderService.updateOrderStatus(orderId, apiOrderStatusDTO);
+        return ResponseBuilder.buildDirectResponse(updatedStatus);
 }
 
     // GET /api/orders

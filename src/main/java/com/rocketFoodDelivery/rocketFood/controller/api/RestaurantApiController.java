@@ -39,7 +39,7 @@ public class RestaurantApiController {
     }
 
 
-    // /**
+    
     //  * Retrieves details for a restaurant  */
     @GetMapping("/api/restaurants/{id}")
     public ResponseEntity<Object> getRestaurantById(@PathVariable int id) {
