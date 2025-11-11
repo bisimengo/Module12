@@ -38,57 +38,48 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     // Add query to get orders with full details including products
     @Query(nativeQuery = true, value = """
-        SELECT o.id, o.customer_id, o.restaurant_id, o.courier_id,
-               c.name as customer_name, 
+        SELECT o.id, o.customer_id, o.restaurant_id, o.courier_id,                
                CONCAT(ca.street_address, ', ', ca.city, ', ', ca.postal_code) as customer_address,
                r.name as restaurant_name,
                CONCAT(ra.street_address, ', ', ra.city, ', ', ra.postal_code) as restaurant_address,
-               cr.name as courier_name,
                os.name as status
         FROM orders o
         JOIN customers c ON o.customer_id = c.id
         JOIN addresses ca ON c.address_id = ca.id
         JOIN restaurants r ON o.restaurant_id = r.id
         JOIN addresses ra ON r.address_id = ra.id
-        LEFT JOIN courier cr ON o.courier_id = cr.id
         JOIN order_statuses os ON o.status_id = os.id
         WHERE o.customer_id = :customerId
         """)
     List<Object[]> findOrdersWithDetailsByCustomerId(@Param("customerId") int customerId);
 
     @Query(nativeQuery = true, value = """
-        SELECT o.id, o.customer_id, o.restaurant_id, o.courier_id,
-               c.name as customer_name, 
+        SELECT o.id, o.customer_id, o.restaurant_id, o.courier_id,                
                CONCAT(ca.street_address, ', ', ca.city, ', ', ca.postal_code) as customer_address,
                r.name as restaurant_name,
                CONCAT(ra.street_address, ', ', ra.city, ', ', ra.postal_code) as restaurant_address,
-               cr.name as courier_name,
                os.name as status
         FROM orders o
         JOIN customers c ON o.customer_id = c.id
         JOIN addresses ca ON c.address_id = ca.id
         JOIN restaurants r ON o.restaurant_id = r.id
         JOIN addresses ra ON r.address_id = ra.id
-        LEFT JOIN courier cr ON o.courier_id = cr.id
         JOIN order_statuses os ON o.status_id = os.id
         WHERE o.restaurant_id = :restaurantId
         """)
     List<Object[]> findOrdersWithDetailsByRestaurantId(@Param("restaurantId") int restaurantId);
 
     @Query(nativeQuery = true, value = """
-        SELECT o.id, o.customer_id, o.restaurant_id, o.courier_id,
-               c.name as customer_name, 
+        SELECT o.id, o.customer_id, o.restaurant_id, o.courier_id,                
                CONCAT(ca.street_address, ', ', ca.city, ', ', ca.postal_code) as customer_address,
                r.name as restaurant_name,
                CONCAT(ra.street_address, ', ', ra.city, ', ', ra.postal_code) as restaurant_address,
-               cr.name as courier_name,
                os.name as status
         FROM orders o
         JOIN customers c ON o.customer_id = c.id
         JOIN addresses ca ON c.address_id = ca.id
         JOIN restaurants r ON o.restaurant_id = r.id
         JOIN addresses ra ON r.address_id = ra.id
-        LEFT JOIN courier cr ON o.courier_id = cr.id
         JOIN order_statuses os ON o.status_id = os.id
         WHERE o.courier_id = :courierId
         """)
@@ -108,19 +99,16 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     int getLastInsertedId();
 
     @Query(nativeQuery = true, value = """
-        SELECT o.id, o.customer_id, o.restaurant_id, o.courier_id,
-               c.name as customer_name, 
+        SELECT o.id, o.customer_id, o.restaurant_id, o.courier_id,             
                CONCAT(ca.street_address, ', ', ca.city, ', ', ca.postal_code) as customer_address,
                r.name as restaurant_name,
                CONCAT(ra.street_address, ', ', ra.city, ', ', ra.postal_code) as restaurant_address,
-               cr.name as courier_name,
                os.name as status
         FROM orders o
         JOIN customers c ON o.customer_id = c.id
         JOIN addresses ca ON c.address_id = ca.id
         JOIN restaurants r ON o.restaurant_id = r.id
         JOIN addresses ra ON r.address_id = ra.id
-        LEFT JOIN courier cr ON o.courier_id = cr.id
         JOIN order_statuses os ON o.status_id = os.id
         WHERE o.id = :orderId
         """)

@@ -70,7 +70,6 @@ public class RestaurantApiController {
         }
     }
 
-
     
     //  * Updates an existing restaurant by ID.(PUT)
     

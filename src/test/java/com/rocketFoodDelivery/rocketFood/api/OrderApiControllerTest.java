@@ -90,12 +90,12 @@ public class OrderApiControllerTest {
     public void testGetOrdersByUserTypeAndId_Success() throws Exception {
         // Create mock order data
         List<ApiOrderDTO> mockOrders = Arrays.asList(
-            createMockOrder(3, 5, "Cathy Spinka", "7757 Darwin Causeway, Gerlachfort, 19822", 
+            createMockOrder(3, 5, "7757 Darwin Causeway, Gerlachfort, 19822", 
                            1, "Fast Pub", "5398 Quigley Harbor, North Lynelle, 60808", 
-                           3, "Cathy Spinka", "in progress", 5975),
-            createMockOrder(13, 5, "Cathy Spinka", "7757 Darwin Causeway, Gerlachfort, 19822",
+                           3, "in progress", 5975),
+            createMockOrder(13, 5, "7757 Darwin Causeway, Gerlachfort, 19822",
                            4, "Silver Grill", "5515 Sol Inlet, Shelbyfurt, 49433-4387",
-                           5, "Rev. Lavina Cartwright", "delivered", 2898)
+                           5, "delivered", 2898)
         );
 
         when(orderService.getOrdersByUserTypeAndId("customer", 5)).thenReturn(mockOrders);
@@ -108,7 +108,6 @@ public class OrderApiControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data").isArray())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data[0].id").value(3))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data[0].customer_id").value(5))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data[0].customer_name").value("Cathy Spinka"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data[0].status").value("in progress"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data[0].total_cost").value(5975))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data[1].id").value(13))
@@ -147,7 +146,7 @@ public class OrderApiControllerTest {
 
     @Test
     public void testGetOrdersByUserTypeAndId_Restaurant() throws Exception {
-        List<ApiOrderDTO> mockOrders = Arrays.asList(createMockOrder(1, 2, "John Doe", "123 Main St", 1, "Fast Pub", "456 Oak Ave", 1, "Jane Smith", "pending", 2500));
+        List<ApiOrderDTO> mockOrders = Arrays.asList(createMockOrder(1, 2, "123 Main St", 1, "Fast Pub", "456 Oak Ave", 1, "pending", 2500));
         when(orderService.getOrdersByUserTypeAndId("restaurant", 1)).thenReturn(mockOrders);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/orders")
@@ -159,7 +158,7 @@ public class OrderApiControllerTest {
 
     @Test
     public void testGetOrdersByUserTypeAndId_Courier() throws Exception {
-        List<ApiOrderDTO> mockOrders = Arrays.asList(createMockOrder(1, 2, "John Doe", "123 Main St", 1, "Fast Pub", "456 Oak Ave", 1, "Jane Smith", "in transit", 3000));
+        List<ApiOrderDTO> mockOrders = Arrays.asList(createMockOrder(1, 2, "123 Main St", 1, "Fast Pub", "456 Oak Ave", 1, "in transit", 3000));
         when(orderService.getOrdersByUserTypeAndId("courier", 1)).thenReturn(mockOrders);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/orders")
@@ -169,19 +168,17 @@ public class OrderApiControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data[0].courier_id").value(1));
     }
 
-    private ApiOrderDTO createMockOrder(int id, int customerId, String customerName, String customerAddress,
+    private ApiOrderDTO createMockOrder(int id, int customerId, String customerAddress,
                                        int restaurantId, String restaurantName, String restaurantAddress,
-                                       int courierId, String courierName, String status, int totalCost) {
+                                       int courierId, String status, int totalCost) {
         ApiOrderDTO order = new ApiOrderDTO();
         order.setId(id);
-        order.setCustomerId(customerId);
-        order.setCustomerName(customerName);
+        order.setCustomerId(customerId);   
         order.setCustomerAddress(customerAddress);
         order.setRestaurantId(restaurantId);
         order.setRestaurantName(restaurantName);
         order.setRestaurantAddress(restaurantAddress);
         order.setCourierId(courierId);
-        order.setCourierName(courierName);
         order.setStatus(status);
         order.setTotalCost(totalCost);
         return order;

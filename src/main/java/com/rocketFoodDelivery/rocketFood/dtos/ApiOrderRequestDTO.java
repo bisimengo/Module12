@@ -23,6 +23,6 @@ public class ApiOrderRequestDTO {
     @NoArgsConstructor
     public static class ProductOrderRequestDTO {
         private Integer productId;
-        private Integer quantity;
+        private Integer productQuantity;
     }
 }

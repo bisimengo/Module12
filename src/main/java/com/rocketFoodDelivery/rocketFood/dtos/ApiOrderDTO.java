@@ -19,9 +19,7 @@ public class ApiOrderDTO {
     @JsonProperty("customer_id")
     private int customerId;
     
-    @JsonProperty("customer_name")
-    private String customerName;
-    
+        
     @JsonProperty("customer_address")
     private String customerAddress;
     
@@ -36,10 +34,7 @@ public class ApiOrderDTO {
     
     @JsonProperty("courier_id")
     private Integer courierId; // Nullable
-    
-    @JsonProperty("courier_name")
-    private String courierName;
-    
+       
     private String status;
     
     private List<ApiProductForOrderApiDTO> products;

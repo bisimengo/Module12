@@ -7,11 +7,11 @@ import com.rocketFoodDelivery.rocketFood.dtos.ApiOrderStatusDTO;
 import com.rocketFoodDelivery.rocketFood.dtos.ApiProductForOrderApiDTO;
 import com.rocketFoodDelivery.rocketFood.models.Order;
 import com.rocketFoodDelivery.rocketFood.models.OrderStatus;
-import com.rocketFoodDelivery.rocketFood.models.UserEntity;          // ✅ Missing import
-import com.rocketFoodDelivery.rocketFood.models.Restaurant;    // ✅ Missing import
-import com.rocketFoodDelivery.rocketFood.models.Product;       // ✅ Missing import
-import com.rocketFoodDelivery.rocketFood.models.Customer;      // ✅ Missing import
-import com.rocketFoodDelivery.rocketFood.models.Courier;       // ✅ Missing import
+import com.rocketFoodDelivery.rocketFood.models.UserEntity;          
+import com.rocketFoodDelivery.rocketFood.models.Restaurant;    
+import com.rocketFoodDelivery.rocketFood.models.Product;       
+import com.rocketFoodDelivery.rocketFood.models.Customer;      
+import com.rocketFoodDelivery.rocketFood.models.Courier;       
 import com.rocketFoodDelivery.rocketFood.repository.OrderRepository;
 import com.rocketFoodDelivery.rocketFood.repository.UserRepository;
 import com.rocketFoodDelivery.rocketFood.repository.RestaurantRepository;
@@ -21,7 +21,7 @@ import com.rocketFoodDelivery.rocketFood.repository.ProductOrderRepository;
 import com.rocketFoodDelivery.rocketFood.repository.CustomerRepository;
 import com.rocketFoodDelivery.rocketFood.exception.ResourceNotFoundException;
 import com.rocketFoodDelivery.rocketFood.exception.InvalidStatusTransitionException;
-import com.rocketFoodDelivery.rocketFood.exception.InsufficientInventoryException;  // ✅ Missing import
+import com.rocketFoodDelivery.rocketFood.exception.InsufficientInventoryException; 
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -66,89 +66,7 @@ public class OrderService {
      * @return ApiOrderDTO with complete order information
      */
     /*
-    @Transactional
-    public ApiOrderDTO addOrder(ApiOrderRequestDTO orderRequest) {
-        try {
-            // 1. Validate customer exists
-            Optional<UserEntity> customer = userRepository.findById(orderRequest.getCustomerId());
-            if (customer.isEmpty()) {
-                throw new RuntimeException("Customer not found");
-            }
-
-            // 2. Validate restaurant exists
-            Optional<Restaurant> restaurant = restaurantRepository.findById(orderRequest.getRestaurantId());
-            if (restaurant.isEmpty()) {
-                throw new RuntimeException("Restaurant not found");
-            }
-
-            // 3. Create the order
-            Order newOrder = new Order();
-            newOrder.setCustomer(customer.get());
-            newOrder.setRestaurant(restaurant.get());
-            newOrder.setStatus("in progress"); // Default status
-            
-            // Assign courier if provided
-            if (orderRequest.getCourierId() != null) {
-                Optional<UserEntity> courier = userRepository.findById(orderRequest.getCourierId());
-                courier.ifPresent(newOrder::setCourier);
-            }
-
-            // 4. Save the order
-            Order savedOrder = orderRepository.save(newOrder);
-
-            // 5. Process products and calculate costs
-            List<ApiProductForOrderDTO> productDTOs = orderRequest.getProducts().stream()
-                .map(productRequest -> {
-                    Optional<Product> product = productRepository.findById(productRequest.getProductId());
-                    if (product.isPresent()) {
-                        Product p = product.get();
-                        int totalCost = p.getCost() * productRequest.getQuantity();
-                        
-                        return new ApiProductForOrderDTO(
-                            p.getId(),
-                            p.getName(),
-                            productRequest.getQuantity(),
-                            p.getCost(),
-                            totalCost
-                        );
-                    }
-                    throw new RuntimeException("Product not found: " + productRequest.getProductId());
-                })
-                .collect(Collectors.toList());
-
-            // After saving the order, save order items
-            orderRequest.getProducts().forEach(productRequest -> {
-                Optional<Product> product = productRepository.findById(productRequest.getProductId());
-                if (product.isPresent()) {
-                    OrderItem orderItem = new OrderItem();
-                    orderItem.setOrder(savedOrder);
-                    orderItem.setProduct(product.get());
-                    orderItem.setQuantity(productRequest.getQuantity());
-                    orderItem.setUnitCost(product.get().getCost());
-                    orderItemRepository.save(orderItem); // You'll need this repository
-                }
-            });
-
-            // 6. Build and return the response DTO
-            return new ApiOrderDTO(
-                savedOrder.getId(),
-                customer.get().getId(),
-                customer.get().getName(),
-                customer.get().getAddress() != null ? customer.get().getAddress().getFullAddress() : "",
-                restaurant.get().getId(),
-                restaurant.get().getName(),
-                restaurant.get().getAddress() != null ? restaurant.get().getAddress().getFullAddress() : "",
-                savedOrder.getCourier() != null ? savedOrder.getCourier().getId() : null,
-                savedOrder.getCourier() != null ? savedOrder.getCourier().getName() : null,
-                savedOrder.getStatus(),
-                productDTOs
-            );
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error creating order: " + e.getMessage(), e);
-        }
-    }
-    */
+  
 
     /**
      * Creates a new order using ApiCreateOrderDTO
@@ -293,20 +211,17 @@ public class OrderService {
         int customerId = ((Number) row[1]).intValue();
         int restaurantId = ((Number) row[2]).intValue();
         Integer courierId = row[3] != null ? ((Number) row[3]).intValue() : null;
-        String customerName = (String) row[4];
-        String customerAddress = (String) row[5];
-        String restaurantName = (String) row[6];
-        String restaurantAddress = (String) row[7];
-        String courierName = (String) row[8];
-        String status = (String) row[9];
+        String customerAddress = (String) row[4];
+        String restaurantName = (String) row[5];
+        String restaurantAddress = (String) row[6];
+        String status = (String) row[7];
         
         // Get products for this order
         List<Object[]> productData = productOrderRepository.findProductsByOrderId(orderId);
         List<ApiProductForOrderApiDTO> products = productData.stream()
             .map(productRow -> new ApiProductForOrderApiDTO(
                 ((Number) productRow[0]).intValue(), // product_id
-                (String) productRow[1],              // product_name
-                ((Number) productRow[2]).intValue(), // quantity
+                ((Number) productRow[2]).intValue(), // product_quantity  
                 ((Number) productRow[3]).intValue(), // unit_cost
                 ((Number) productRow[4]).intValue()  // total_cost
             ))
@@ -318,60 +233,11 @@ public class OrderService {
             .sum();
         
         return new ApiOrderDTO(
-            orderId, customerId, customerName, customerAddress,
+            orderId, customerId, customerAddress,
             restaurantId, restaurantName, restaurantAddress,
-            courierId, courierName, status, products, totalCost
+            courierId, status, products, totalCost
         );
     }
     
-    // /**
-    //  * Helper method to convert Order entity to ApiOrderDTO
-    //  */
-    // private ApiOrderDTO convertToApiOrderDTO(Order order) {
-    //     // Get products for this order
-    //     List<ApiProductForOrderDTO> productDTOs = order.getOrderItems().stream()
-    //         .map(orderItem -> new ApiProductForOrderDTO(
-    //             orderItem.getProduct().getId(),
-    //             orderItem.getProduct().getName(),
-    //             orderItem.getQuantity(),
-    //             orderItem.getProduct().getCost(),
-    //             orderItem.getQuantity() * orderItem.getProduct().getCost()
-    //         ))
-    //         .collect(Collectors.toList());
-
-    //     return new ApiOrderDTO(
-    //         order.getId(),
-    //         order.getCustomer().getId(),
-    //         order.getCustomer().getName(),
-    //         order.getCustomer().getAddress() != null ? order.getCustomer().getAddress().getFullAddress() : "",
-    //         order.getRestaurant().getId(),
-    //         order.getRestaurant().getName(),
-    //         order.getRestaurant().getAddress() != null ? order.getRestaurant().getAddress().getFullAddress() : "",
-    //         order.getCourier() != null ? order.getCourier().getId() : null,
-    //         order.getCourier() != null ? order.getCourier().getName() : null,
-    //         order.getStatus(),
-    //         productDTOs // ✅ FIXED: Now includes actual products instead of empty list
-    //     );
-    // }
-    
-    // /**
-    //  * Converts ApiCreateOrderDTO to ApiOrderRequestDTO
-    //  */
-    // private ApiOrderRequestDTO convertToOrderRequestDTO(ApiCreateOrderDTO createOrderDTO) {
-    //     // Convert nested ProductOrderDTO to the format expected by ApiOrderRequestDTO
-    //     List<ApiOrderRequestDTO.ProductOrderRequestDTO> products = createOrderDTO.getProducts().stream()
-    //         .map(productDTO -> new ApiOrderRequestDTO.ProductOrderRequestDTO(
-    //             productDTO.getProductId(),
-    //             productDTO.getQuantity()
-    //         ))
-    //         .collect(Collectors.toList());
-        
-    //     return new ApiOrderRequestDTO(
-    //         createOrderDTO.getCustomerId(),
-    //         createOrderDTO.getRestaurantId(),
-    //         createOrderDTO.getCourierId(),
-    //         products
-    //     );
-    // }
 
 }

@@ -30,8 +30,8 @@ public interface ProductOrderRepository extends JpaRepository<ProductOrder, Inte
     @Override
     void deleteById(Integer productOrderId);
     @Query(nativeQuery = true, value = """
-        SELECT po.product_id, p.name as product_name, po.quantity, p.cost as unit_cost,
-               (po.quantity * p.cost) as total_cost
+        SELECT po.product_id, p.name as product_name, po.product_quantity as quantity, p.cost as unit_cost,
+               (po.product_quantity * p.cost) as total_cost
         FROM product_orders po
         JOIN products p ON po.product_id = p.id
         WHERE po.order_id = :orderId
@@ -41,10 +41,10 @@ public interface ProductOrderRepository extends JpaRepository<ProductOrder, Inte
     @Modifying
     @Transactional
     @Query(nativeQuery = true, value = """
-        INSERT INTO product_orders (order_id, product_id, quantity) 
-        VALUES (:orderId, :productId, :quantity)
+        INSERT INTO product_orders (order_id, product_id, product_quantity) 
+        VALUES (:orderId, :productId, :product_quantity)
         """)
     void createProductOrder(@Param("orderId") int orderId, 
                            @Param("productId") int productId, 
-                           @Param("quantity") int quantity);
+                           @Param("product_quantity") int productQuantity);
 }

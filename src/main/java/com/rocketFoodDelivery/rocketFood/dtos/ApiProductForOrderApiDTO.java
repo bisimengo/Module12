@@ -12,12 +12,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ApiProductForOrderApiDTO {
     @JsonProperty("product_id")
-    private int productId;
-    
-    @JsonProperty("product_name")
-    private String productName;
-    
-    private int quantity;
+    private int productId;    
+     
+    @JsonProperty("product_quantity")
+    private int productQuantity;
     
     @JsonProperty("unit_cost")
     private int unitCost;
