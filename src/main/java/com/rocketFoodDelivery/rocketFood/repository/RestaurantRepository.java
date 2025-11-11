@@ -17,7 +17,7 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
     List<Restaurant> findAll();
 
     /**
-     * Finds a restaurant by its ID along with the calculated average rating rounded up to the ceiling.
+     * Finds a restaurant by its ID (GET) along with the calculated average rating rounded up to the ceiling.
      *
      * @param restaurantId The ID of the restaurant to retrieve.
      * @return A list of Object arrays representing the selected columns from the query result.
@@ -25,17 +25,19 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
      *         An empty list is returned if no restaurant is found with the specified ID.
      */
     @Query(nativeQuery = true, value =
-        "SELECT r.id, r.name, r.price_range, COALESCE(CEIL(SUM(o.restaurant_rating) / NULLIF(COUNT(o.id), 0)), 0) AS rating " +
-        "FROM restaurants r " +
-        "LEFT JOIN orders o ON r.id = o.restaurant_id " +
-        "WHERE r.id = :restaurantId " +
-        "GROUP BY r.id")
+        """
+        SELECT r.id, r.name, r.price_range, COALESCE(CEIL(SUM(o.restaurant_rating) / NULLIF(COUNT(o.id), 0)), 0) AS rating 
+        FROM restaurants r 
+        LEFT JOIN orders o ON r.id = o.restaurant_id 
+        WHERE r.id = :restaurantId 
+        GROUP BY r.id
+        """)
     List<Object[]> findRestaurantWithAverageRatingById(@Param("restaurantId") int restaurantId);
     
     /**
      * Finds restaurants based on the provided rating and price range.
      *
-     * Executes a native SQL query that retrieves restaurants with their information, including a calculated
+     * Executes a native SQL query that retrieves restaurants (GET) with their information, including a calculated
      * average rating rounded up to the ceiling.
      *
      * @param rating     The minimum rounded-up average rating of the restaurants. (Optional)
@@ -45,41 +47,79 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Integer>
      *         An empty list is returned if no restaurant is found with the specified ID.
      */
     @Query(nativeQuery = true, value =
-        "SELECT * FROM (" +
-        "   SELECT r.id, r.name, r.price_range, COALESCE(CEIL(SUM(o.restaurant_rating) / NULLIF(COUNT(o.id), 0)), 0) AS rating " +
-        "   FROM restaurants r " +
-        "   LEFT JOIN orders o ON r.id = o.restaurant_id " +
-        "   WHERE (:priceRange IS NULL OR r.price_range = :priceRange) " +
-        "   GROUP BY r.id" +
-        ") AS result " +
-        "WHERE (:rating IS NULL OR result.rating = :rating)")
+        """
+        SELECT * FROM (
+           SELECT r.id, r.name, r.price_range, COALESCE(CEIL(SUM(o.restaurant_rating) / NULLIF(COUNT(o.id), 0)), 0) AS rating
+            FROM restaurants r
+           LEFT JOIN orders o ON r.id = o.restaurant_id
+           WHERE (:priceRange IS NULL OR r.price_range = :priceRange)
+           GROUP BY r.id
+        ) AS result
+        WHERE (:rating IS NULL OR result.rating = :rating)
+        """)
     List<Object[]> findRestaurantsByRatingAndPriceRange(@Param("rating") Integer rating, @Param("priceRange") Integer priceRange);
 
+
+
     // TODO
+    // EXECUTE A native SQL query for the POST /api/restaurants route
     @Modifying
     @Transactional
     @Query(nativeQuery = true, value =
-        "TODO Write SQL query here")
-    void saveRestaurant(long userId, long addressId, String name, int priceRange, String phone, String email);
+       """
+    INSERT INTO restaurants (user_id, address_id, name, price_range, phone, email) 
+        VALUES (:userId, :addressId, :name, :priceRange, :phone, :email)
+    """)
+    void saveRestaurant(@Param("userId") Long userId, @Param("addressId") Long addressId, 
+               @Param("name") String name, @Param("priceRange") Integer priceRange, 
+               @Param("phone") String phone, @Param("email") String email);
 
-    // TODO
+
+    // TODO 
+    // The native SQL query for the PUT /api/restaurants route
     @Modifying
     @Transactional
     @Query(nativeQuery = true, value =
-            "TODO Write SQL query here")
-    void updateRestaurant(int restaurantId, String name, int priceRange, String phone);
+        """
+        UPDATE restaurants 
+        SET name = :name, price_range = :priceRange, phone = :phone 
+        WHERE id = :restaurantId
+        """)
+    void updateRestaurant(@Param("restaurantId") int restaurantId, @Param("name") String name, 
+                     @Param("priceRange") int priceRange, @Param("phone") String phone);
+
 
     // TODO
-    @Query(nativeQuery = true, value = "TODO Write SQL query here")
+    //The native SQL query for the GET /api/restaurant/{id} route
+    @Query(nativeQuery = true, value = 
+        """
+        SELECT * FROM restaurants WHERE id = :restaurantId
+        """)
     Optional<Restaurant> findRestaurantById(@Param("restaurantId") int restaurantId);
 
     @Query(nativeQuery = true, value = "SELECT LAST_INSERT_ID() AS id")
     int getLastInsertedId();
 
     // TODO
+    //The native SQL query for the GET /api/restaurant/{id} route
+    @Query(nativeQuery = true, value = 
+        """
+        SELECT r.id, r.name, r.price_range, r.phone, r.email, r.user_id,
+               a.id as address_id, a.street_address, a.city, a.postal_code
+        FROM restaurants r 
+        JOIN addresses a ON r.address_id = a.id 
+        WHERE r.id = :restaurantId
+        """)
+    List<Object[]> findRestaurantWithFullDetailsById(@Param("restaurantId") int restaurantId);
+
+    // TODO
+    //The native SQL query for the DELETE /api/restaurants/{id} route
     @Modifying
     @Transactional
-    @Query(nativeQuery = true, value = "TODO Write SQL query here")
+    @Query(nativeQuery = true, value = 
+        """
+        DELETE FROM restaurants WHERE id = :restaurantId
+        """)
     void deleteRestaurantById(@Param("restaurantId") int restaurantId);
 
 }

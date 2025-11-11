@@ -15,9 +15,13 @@ import java.util.Optional;
 public interface ProductOrderRepository extends JpaRepository<ProductOrder, Integer> {
 
     // TODO
+    //The native SQL query for the DELETE /api/product_orders?order={id} route
     @Modifying
     @Transactional
-    @Query(nativeQuery = true, value = "TODO Write SQL query here")
+    @Query(nativeQuery = true, value =
+    """
+    DELETE FROM product_orders WHERE order_id = :orderId
+    """)
     void deleteProductOrdersByOrderId(@Param("orderId") int orderId);
 
     Optional<ProductOrder> findById(int id);
@@ -25,4 +29,22 @@ public interface ProductOrderRepository extends JpaRepository<ProductOrder, Inte
     List<ProductOrder> findByProductId(int id);
     @Override
     void deleteById(Integer productOrderId);
+    @Query(nativeQuery = true, value = """
+        SELECT po.product_id, p.name as product_name, po.product_quantity as quantity, p.cost as unit_cost,
+               (po.product_quantity * p.cost) as total_cost
+        FROM product_orders po
+        JOIN products p ON po.product_id = p.id
+        WHERE po.order_id = :orderId
+        """)
+    List<Object[]> findProductsByOrderId(@Param("orderId") int orderId);
+
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = """
+        INSERT INTO product_orders (order_id, product_id, product_quantity) 
+        VALUES (:orderId, :productId, :product_quantity)
+        """)
+    void createProductOrder(@Param("orderId") int orderId, 
+                           @Param("productId") int productId, 
+                           @Param("product_quantity") int productQuantity);
 }

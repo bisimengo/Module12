@@ -1,8 +1,7 @@
 package com.rocketFoodDelivery.rocketFood.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApiAddressDto {
+public class ApiAddressDTO {
     private int id;
 
     @JsonProperty("street_address")

@@ -1,5 +1,6 @@
 package com.rocketFoodDelivery.rocketFood.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,9 +10,12 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApiProductDTO {
+public class ApiDeleteRestaurantResponseDTO {
     private int id;
     private String name;
-    private int cost;
-
+    
+    @JsonProperty("price_range")
+    private int priceRange;
+    
+    private int rating;
 }

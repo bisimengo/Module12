@@ -1,12 +1,21 @@
 package com.rocketFoodDelivery.rocketFood.service;
 
-import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateRestaurantDto;
-import com.rocketFoodDelivery.rocketFood.dtos.ApiRestaurantDto;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiCreateRestaurantDTO;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiRestaurantDTO;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiAddressDTO;  // Add this import
 import com.rocketFoodDelivery.rocketFood.models.Restaurant;
 import com.rocketFoodDelivery.rocketFood.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.rocketFoodDelivery.rocketFood.models.Order;
+import com.rocketFoodDelivery.rocketFood.repository.RestaurantRepository;
+import com.rocketFoodDelivery.rocketFood.repository.ProductRepository;
+import com.rocketFoodDelivery.rocketFood.repository.OrderRepository;
+import com.rocketFoodDelivery.rocketFood.repository.ProductOrderRepository;
+import com.rocketFoodDelivery.rocketFood.repository.UserRepository;
+import org.springframework.data.repository.query.Param;
+import com.rocketFoodDelivery.rocketFood.dtos.ApiDeleteRestaurantResponseDTO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -24,6 +33,7 @@ public class RestaurantService {
     private final ProductOrderRepository productOrderRepository;
     private final UserRepository userRepository;
     private final AddressService addressService;
+    private final AddressRepository addressRepository;  
 
     @Autowired
     public RestaurantService(
@@ -32,7 +42,8 @@ public class RestaurantService {
         OrderRepository orderRepository,
         ProductOrderRepository productOrderRepository,
         UserRepository userRepository,
-        AddressService addressService
+        AddressService addressService,
+        AddressRepository addressRepository   
         ) {
         this.restaurantRepository = restaurantRepository;
         this.productRepository = productRepository;
@@ -40,6 +51,7 @@ public class RestaurantService {
         this.productOrderRepository = productOrderRepository;
         this.userRepository = userRepository;
         this.addressService = addressService;
+        this.addressRepository = addressRepository;  
     }
 
     public List<Restaurant> findAllRestaurants() {
@@ -47,7 +59,7 @@ public class RestaurantService {
     }
 
     /**
-     * Retrieves a restaurant with its details, including the average rating, based on the provided restaurant ID.
+     * Retrieves (GET) a restaurant with its details, including the average rating, based on the provided restaurant ID.
      *
      * @param id The unique identifier of the restaurant to retrieve.
      * @return An Optional containing a RestaurantDTO with details such as id, name, price range, and average rating.
@@ -55,7 +67,7 @@ public class RestaurantService {
      *
      * @see RestaurantRepository#findRestaurantWithAverageRatingById(int) for the raw query details from the repository.
      */
-    public Optional<ApiRestaurantDto> findRestaurantWithAverageRatingById(int id) {
+    public Optional<ApiRestaurantDTO> findRestaurantWithAverageRatingById(int id) {
         List<Object[]> restaurant = restaurantRepository.findRestaurantWithAverageRatingById(id);
 
         if (!restaurant.isEmpty()) {
@@ -65,89 +77,259 @@ public class RestaurantService {
             int priceRange = (int) row[2];
             double rating = (row[3] != null) ? ((BigDecimal) row[3]).setScale(1, RoundingMode.HALF_UP).doubleValue() : 0.0;
             int roundedRating = (int) Math.ceil(rating);
-            ApiRestaurantDto restaurantDto = new ApiRestaurantDto(restaurantId, name, priceRange, roundedRating);
-            return Optional.of(restaurantDto);
+            ApiRestaurantDTO restaurantDTO = new ApiRestaurantDTO(restaurantId, name, priceRange, roundedRating);
+            System.out.println("Restaurant found: " + restaurantDTO.getName());
+            return Optional.of(restaurantDTO);
         } else {
             return Optional.empty();
         }
     }
 
     /**
-     * Finds restaurants based on the provided rating and price range.
+     * Finds (GET) restaurants based on the provided rating and price range.
      *
      * @param rating     The rating for filtering the restaurants.
      * @param priceRange The price range for filtering the restaurants.
-     * @return A list of ApiRestaurantDto objects representing the selected restaurants.
+     * @return A list of ApiRestaurantDTO objects representing the selected restaurants.
      *         Each object contains the restaurant's ID, name, price range, and a rounded-up average rating.
      */
-    public List<ApiRestaurantDto> findRestaurantsByRatingAndPriceRange(Integer rating, Integer priceRange) {
+    public List<ApiRestaurantDTO> findRestaurantsByRatingAndPriceRange(Integer rating, Integer priceRange) {
         List<Object[]> restaurants = restaurantRepository.findRestaurantsByRatingAndPriceRange(rating, priceRange);
+        List<ApiRestaurantDTO> restaurantDtos = new ArrayList<>();
 
-        List<ApiRestaurantDto> restaurantDtos = new ArrayList<>();
-
-            for (Object[] row : restaurants) {
-                int restaurantId = (int) row[0];
-                String name = (String) row[1];
-                int range = (int) row[2];
-                double avgRating = (row[3] != null) ? ((BigDecimal) row[3]).setScale(1, RoundingMode.HALF_UP).doubleValue() : 0.0;
-                int roundedAvgRating = (int) Math.ceil(avgRating);
-                restaurantDtos.add(new ApiRestaurantDto(restaurantId, name, range, roundedAvgRating));
+        for (Object[] row : restaurants) {
+            int restaurantId = ((Number) row[0]).intValue();
+            String name = (String) row[1];
+            int range = ((Number) row[2]).intValue();
+            
+            // Handle rating more carefully
+            int roundedAvgRating = 0;
+            if (row[3] != null) {
+                if (row[3] instanceof BigDecimal) {
+                    roundedAvgRating = ((BigDecimal) row[3]).intValue();
+                } else if (row[3] instanceof Number) {
+                    roundedAvgRating = ((Number) row[3]).intValue();
+                }
             }
+            
+            restaurantDtos.add(new ApiRestaurantDTO(restaurantId, name, range, roundedAvgRating));
+        }
 
-            return restaurantDtos;
+        return restaurantDtos;
     }
 
     // TODO
 
     /**
-     * Creates a new restaurant and returns its information.
+     * Creates(POST) a new restaurant and returns its information.
      *
      * @param restaurant The data for the new restaurant.
      * @return An Optional containing the created restaurant's information as an ApiCreateRestaurantDto,
      *         or Optional.empty() if the user with the provided user ID does not exist or if an error occurs during creation.
      */
     @Transactional
-    public Optional<ApiCreateRestaurantDto> createRestaurant(ApiCreateRestaurantDto restaurant) {
-        return null; // TODO return proper object
+    public Optional<ApiCreateRestaurantDTO> createRestaurant(ApiCreateRestaurantDTO restaurant) {
+        try {
+            // 1. Validate that the user exists
+            if (!userRepository.existsById(restaurant.getUserId())) {
+                return Optional.empty();
+            }
+
+            // 2. Create the address using AddressRepository directly
+            addressRepository.saveAddress(
+                restaurant.getAddress().getStreetAddress(),
+                restaurant.getAddress().getCity(),
+                restaurant.getAddress().getPostalCode()
+            );
+            
+            // Get the last inserted address ID
+            Long addressId = (long) addressRepository.getLastInsertedId();
+            if (addressId == null) {
+                return Optional.empty();
+            }
+
+            // 3. Save the restaurant using the repository
+            restaurantRepository.saveRestaurant(
+                (long) restaurant.getUserId(),
+                addressId,
+                restaurant.getName(),
+                restaurant.getPriceRange(),
+                restaurant.getPhone(),
+                restaurant.getEmail()
+            );
+
+            // 4. Get the last inserted ID
+            int newRestaurantId = restaurantRepository.getLastInsertedId();
+
+            // 5. Return the created restaurant data with address ID included
+            ApiAddressDTO returnAddress = new ApiAddressDTO(
+                addressId.intValue(),
+                restaurant.getAddress().getStreetAddress(),
+                restaurant.getAddress().getCity(),
+                restaurant.getAddress().getPostalCode()
+            );
+
+            return Optional.of(new ApiCreateRestaurantDTO(
+                newRestaurantId,
+                restaurant.getName(),
+                restaurant.getUserId(),
+                returnAddress,
+                restaurant.getPriceRange(),
+                restaurant.getPhone(),
+                restaurant.getEmail()
+            ));
+
+        } catch (Exception e) {
+            System.err.println("Error creating restaurant: " + e.getMessage());
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 
-    // TODO
 
     /**
-     * Finds a restaurant by its ID.
+     * Finds (GET) a restaurant by its ID.
      *
      * @param id The ID of the restaurant to retrieve.
      * @return An Optional containing the restaurant with the specified ID,
      *         or Optional.empty() if no restaurant is found.
      */
     public Optional<Restaurant> findById(int id) {
-        return null; // TODO return proper object
+        return restaurantRepository.findRestaurantById(id);
     }
 
     // TODO
 
     /**
-     * Updates an existing restaurant by ID with the provided data.
+     * Updates (PUT) an existing restaurant by ID with the provided data.
      *
      * @param id                  The ID of the restaurant to update.
-     * @param updatedRestaurantDto The updated data for the restaurant.
-     * @return An Optional containing the updated restaurant's information as an ApiCreateRestaurantDto,
+     * @param updatedRestaurantDTO The updated data for the restaurant.
+     * @return An Optional containing the updated restaurant's information as an ApiCreateRestaurantDTO,
      *         or Optional.empty() if the restaurant with the specified ID is not found or if an error occurs during the update.
      */
     @Transactional
-    public Optional<ApiCreateRestaurantDto> updateRestaurant(int id, ApiCreateRestaurantDto updatedRestaurantDto) {
-        return null; // TODO return proper object
+    public Optional<ApiCreateRestaurantDTO> updateRestaurant(int id, ApiCreateRestaurantDTO updatedRestaurantDTO) {
+        try {
+            // 1. Check if restaurant exists first
+            List<Object[]> existingRestaurantData = restaurantRepository.findRestaurantWithFullDetailsById(id);
+            if (existingRestaurantData.isEmpty()) {
+                return Optional.empty();
+            }
+
+            // 2. Update the restaurant using the repository
+            restaurantRepository.updateRestaurant(
+                id,
+                updatedRestaurantDTO.getName(),
+                updatedRestaurantDTO.getPriceRange(),
+                updatedRestaurantDTO.getPhone()
+            );
+
+            // 3. Get the updated restaurant data with full details
+            List<Object[]> updatedRestaurantData = restaurantRepository.findRestaurantWithFullDetailsById(id);
+            if (!updatedRestaurantData.isEmpty()) {
+                Object[] row = updatedRestaurantData.get(0);
+                
+                // Extract data from the query result
+                int restaurantId = ((Number) row[0]).intValue();
+                String name = (String) row[1];
+                int priceRange = ((Number) row[2]).intValue();
+                String phone = (String) row[3];
+                String email = (String) row[4];
+                int userId = ((Number) row[5]).intValue();
+                
+                // Address data
+                int addressId = ((Number) row[6]).intValue();
+                String streetAddress = (String) row[7];
+                String city = (String) row[8];
+                String postalCode = (String) row[9];
+                
+                // Create address DTO
+                ApiAddressDTO addressDTO = new ApiAddressDTO(addressId, streetAddress, city, postalCode);
+                
+                // Return the complete restaurant data
+                return Optional.of(new ApiCreateRestaurantDTO(
+                    restaurantId,
+                    name,
+                    userId,
+                    addressDTO,
+                    priceRange,
+                    phone,
+                    email
+                ));
+            }
+
+            return Optional.empty();
+
+        } catch (Exception e) {
+            System.err.println("Error updating restaurant: " + e.getMessage());
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 
     // TODO
 
     /**
-     * Deletes a restaurant along with its associated data, including its product orders, orders and products.
+     * Deletes (DELETE) a restaurant along with its associated data, including its product orders, orders and products.
      *
      * @param restaurantId The ID of the restaurant to delete.
      */
     @Transactional
-    public void deleteRestaurant(int restaurantId) {
-        return;
+    public Optional<ApiDeleteRestaurantResponseDTO> deleteRestaurant(int restaurantId) {
+        try {
+            // 1. First, get the restaurant data with rating before deletion
+            List<Object[]> restaurantData = restaurantRepository.findRestaurantWithAverageRatingById(restaurantId);
+            if (restaurantData.isEmpty()) {
+                return Optional.empty(); // Restaurant not found
+            }
+            
+            // Extract restaurant information for response
+            Object[] row = restaurantData.get(0);
+            int id = ((Number) row[0]).intValue();
+            String name = (String) row[1];
+            int priceRange = ((Number) row[2]).intValue();
+            
+            // Handle rating calculation
+            int rating = 0;
+            if (row[3] != null) {
+                if (row[3] instanceof BigDecimal) {
+                    rating = ((BigDecimal) row[3]).intValue();
+                } else if (row[3] instanceof Number) {
+                    rating = ((Number) row[3]).intValue();
+                }
+            }
+            
+            // Create response DTO before deletion
+            ApiDeleteRestaurantResponseDTO responseDTO = new ApiDeleteRestaurantResponseDTO(id, name, priceRange, rating);
+
+            // 2. Now proceed with deletion logic
+            Optional<Restaurant> restaurant = restaurantRepository.findRestaurantById(restaurantId);
+            if (restaurant.isEmpty()) {
+                return Optional.empty();
+            }
+
+            // 3. Get all orders for this restaurant
+            List<Order> orders = orderRepository.findOrdersByRestaurantId(restaurantId);
+            
+            // 4. Delete product orders for each order, then delete the order
+            for (Order order : orders) {
+                productOrderRepository.deleteProductOrdersByOrderId(order.getId());
+                orderRepository.deleteOrderById(order.getId());
+            }
+
+            // 5. Delete products associated with the restaurant
+            productRepository.deleteProductsByRestaurantId(restaurantId);
+
+            // 6. Finally, delete the restaurant
+            restaurantRepository.deleteRestaurantById(restaurantId);
+
+            return Optional.of(responseDTO);
+
+        } catch (Exception e) {
+            System.err.println("Error deleting restaurant: " + e.getMessage());
+            e.printStackTrace();
+            return Optional.empty();
+        }
     }
 }

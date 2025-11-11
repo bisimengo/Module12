@@ -12,15 +12,6 @@ import com.rocketFoodDelivery.rocketFood.exception.*;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ValidationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiErrorDTO> handleValidationException(ValidationException ex) {
-        ApiErrorDTO response = new ApiErrorDTO();
-        response.setError("Validation failed");
-        response.setDetails(ex.getErrors().getAllErrors().toString());
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
-
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<ApiErrorDTO> handleResourceNotFoundException(ResourceNotFoundException ex) {
@@ -30,12 +21,57 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ApiErrorDTO> handleValidationException(ValidationException ex) {
+        ApiErrorDTO response = new ApiErrorDTO();
+        response.setError("Validation failed");
+        response.setDetails(ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ApiErrorDTO> handleBadRequestException(BadRequestException ex) {
         ApiErrorDTO response = new ApiErrorDTO();
         response.setError("Invalid or missing parameters");
+        response.setDetails(null);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidStatusTransitionException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ApiErrorDTO> handleInvalidStatusTransitionException(InvalidStatusTransitionException ex) {
+        ApiErrorDTO response = new ApiErrorDTO();
+        response.setError("Invalid or missing parameters");
+        response.setDetails(null);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ApiErrorDTO> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ApiErrorDTO response = new ApiErrorDTO();
+        response.setError("Invalid or missing parameters");
         response.setDetails(ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<ApiErrorDTO> handleRuntimeException(RuntimeException ex) {
+        ApiErrorDTO response = new ApiErrorDTO();
+        response.setError("Internal server error");
+        response.setDetails(ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(InsufficientInventoryException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ApiErrorDTO> handleInsufficientInventoryException(InsufficientInventoryException ex) {
+        ApiErrorDTO response = new ApiErrorDTO();
+        response.setError("Invalid or missing parameters");
+        response.setDetails(null);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

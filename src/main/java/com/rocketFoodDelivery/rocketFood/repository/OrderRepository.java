@@ -19,12 +19,98 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByCourierId(int id);
 
     // TODO
-    @Query(nativeQuery = true, value = "TODO Write SQL query here")
+    // The native SQL query for the GET api/orders?type=restaurants&id={id} route 
+    @Query(nativeQuery = true, value =
+     """
+    SELECT * FROM orders WHERE restaurant_id = :restaurantId
+    """)
     List<Order> findOrdersByRestaurantId(@Param("restaurantId") int restaurantId);
 
     // TODO
+    // The native SQL query for the DELETE /api/order/{id} route
     @Modifying
     @Transactional
-    @Query(nativeQuery = true, value = "TODO Write SQL query here")
+    @Query(nativeQuery = true, value =
+    """
+    DELETE FROM orders WHERE id = :orderId
+    """)
     void deleteOrderById(@Param("orderId") int orderId);
+
+    // Add query to get orders with full details including products
+    @Query(nativeQuery = true, value = """
+        SELECT o.id, o.customer_id, o.restaurant_id, o.courier_id,                
+               CONCAT(ca.street_address, ', ', ca.city, ', ', ca.postal_code) as customer_address,
+               r.name as restaurant_name,
+               CONCAT(ra.street_address, ', ', ra.city, ', ', ra.postal_code) as restaurant_address,
+               os.name as status
+        FROM orders o
+        JOIN customers c ON o.customer_id = c.id
+        JOIN addresses ca ON c.address_id = ca.id
+        JOIN restaurants r ON o.restaurant_id = r.id
+        JOIN addresses ra ON r.address_id = ra.id
+        JOIN order_statuses os ON o.status_id = os.id
+        WHERE o.customer_id = :customerId
+        """)
+    List<Object[]> findOrdersWithDetailsByCustomerId(@Param("customerId") int customerId);
+
+    @Query(nativeQuery = true, value = """
+        SELECT o.id, o.customer_id, o.restaurant_id, o.courier_id,                
+               CONCAT(ca.street_address, ', ', ca.city, ', ', ca.postal_code) as customer_address,
+               r.name as restaurant_name,
+               CONCAT(ra.street_address, ', ', ra.city, ', ', ra.postal_code) as restaurant_address,
+               os.name as status
+        FROM orders o
+        JOIN customers c ON o.customer_id = c.id
+        JOIN addresses ca ON c.address_id = ca.id
+        JOIN restaurants r ON o.restaurant_id = r.id
+        JOIN addresses ra ON r.address_id = ra.id
+        JOIN order_statuses os ON o.status_id = os.id
+        WHERE o.restaurant_id = :restaurantId
+        """)
+    List<Object[]> findOrdersWithDetailsByRestaurantId(@Param("restaurantId") int restaurantId);
+
+    @Query(nativeQuery = true, value = """
+        SELECT o.id, o.customer_id, o.restaurant_id, o.courier_id,                
+               CONCAT(ca.street_address, ', ', ca.city, ', ', ca.postal_code) as customer_address,
+               r.name as restaurant_name,
+               CONCAT(ra.street_address, ', ', ra.city, ', ', ra.postal_code) as restaurant_address,
+               os.name as status
+        FROM orders o
+        JOIN customers c ON o.customer_id = c.id
+        JOIN addresses ca ON c.address_id = ca.id
+        JOIN restaurants r ON o.restaurant_id = r.id
+        JOIN addresses ra ON r.address_id = ra.id
+        JOIN order_statuses os ON o.status_id = os.id
+        WHERE o.courier_id = :courierId
+        """)
+    List<Object[]> findOrdersWithDetailsByCourierId(@Param("courierId") int courierId);
+
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = """
+        INSERT INTO orders (customer_id, restaurant_id, status_id) 
+        VALUES (:customerId, :restaurantId, :statusId)
+        """)
+    void createOrder(@Param("customerId") int customerId, 
+                     @Param("restaurantId") int restaurantId, 
+                     @Param("statusId") int statusId);
+
+    @Query(nativeQuery = true, value = "SELECT LAST_INSERT_ID()")
+    int getLastInsertedId();
+
+    @Query(nativeQuery = true, value = """
+        SELECT o.id, o.customer_id, o.restaurant_id, o.courier_id,             
+               CONCAT(ca.street_address, ', ', ca.city, ', ', ca.postal_code) as customer_address,
+               r.name as restaurant_name,
+               CONCAT(ra.street_address, ', ', ra.city, ', ', ra.postal_code) as restaurant_address,
+               os.name as status
+        FROM orders o
+        JOIN customers c ON o.customer_id = c.id
+        JOIN addresses ca ON c.address_id = ca.id
+        JOIN restaurants r ON o.restaurant_id = r.id
+        JOIN addresses ra ON r.address_id = ra.id
+        JOIN order_statuses os ON o.status_id = os.id
+        WHERE o.id = :orderId
+        """)
+    List<Object[]> findOrdersWithDetailsByOrderId(@Param("orderId") int orderId);
 }

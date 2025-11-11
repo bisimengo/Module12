@@ -45,19 +45,10 @@ public class AuthController {
             );
             UserEntity user = (UserEntity) authentication.getPrincipal();
             String accessToken = jwtUtil.generateAccessToken(user);
-            Optional<Courier> courier = courierRepository.findByUserEntityId(user.getId());
-            Optional<Customer> customer = customerRepository.findByUserEntityId(user.getId());
 
-            AuthResponseSuccessDTO response = new AuthResponseSuccessDTO();
-            if(courier.isPresent()){
-                response.setCourier_id(courier.get().getId());
-            }
-            if (customer.isPresent()){
-                response.setCustomer_id(customer.get().getId());
-            }
+            AuthResponseSuccessDTO response = new AuthResponseSuccessDTO();                
             response.setSuccess(true);
             response.setAccessToken(accessToken);
-            response.setUser_id(user.getId());
             return ResponseEntity.ok().body(response);
         } catch (BadCredentialsException e) {
             AuthResponseErrorDTO response = new AuthResponseErrorDTO();

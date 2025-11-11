@@ -50,8 +50,11 @@ public class SecurityConfig {
         http.authorizeRequests()
                 .requestMatchers("/api/auth").permitAll()
                 .requestMatchers("/backoffice/**").permitAll()
-
-
+                .requestMatchers("/api/products").permitAll()
+                .requestMatchers("/api/restaurants").permitAll()
+                .requestMatchers("/api/order").permitAll()
+                .requestMatchers("/api/orders").permitAll()
+                .requestMatchers("/api/**").permitAll()
                 .anyRequest().authenticated();
         http.exceptionHandling()
                 .authenticationEntryPoint(
