@@ -37,12 +37,7 @@ public class OrderApiController {
     @PostMapping("/api/order/{order_id}/status")
     public ResponseEntity<Object> updateOrderStatus(
         @PathVariable("order_id") int orderId,
-        @Valid @RequestBody ApiOrderStatusDTO apiOrderStatusDTO,
-        BindingResult bindingResult) {
-    
-    if (bindingResult.hasErrors()) {
-        throw new BadRequestException("Invalid or missing parameters");
-    }
+        @RequestBody ApiOrderStatusDTO apiOrderStatusDTO) {
     
     ApiOrderStatusDTO updatedStatus = orderService.updateOrderStatus(orderId, apiOrderStatusDTO);
     return ResponseBuilder.buildDirectResponse(updatedStatus);

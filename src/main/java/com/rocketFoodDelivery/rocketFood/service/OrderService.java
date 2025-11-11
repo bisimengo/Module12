@@ -139,43 +139,27 @@ public class OrderService {
         
         Order order = orderOpt.get();
         
-        // 2. Validate status transition (optional - add business logic if needed)
-        String newStatus = statusDTO.getStatus().toLowerCase();
-        if (!isValidStatusTransition(order.getOrder_status().getName(), newStatus)) {
-            throw new InvalidStatusTransitionException("Cannot transition from " + 
-                order.getOrder_status().getName() + " to " + newStatus);
-        }
+        // 2. REMOVE THIS SECTION - No status transition validation
+        // String currentStatus = order.getOrder_status().getName();
+        // if (!isValidStatusTransition(currentStatus, newStatus)) {
+        //     throw new InvalidStatusTransitionException("Cannot transition from " + currentStatus + " to " + newStatus);
+        // }
         
-        // 3. Find the status entity
+        // 3. Allow any status transition
+        String newStatus = statusDTO.getStatus().toLowerCase();
+        
+        // 4. Find the status entity
         Optional<OrderStatus> newStatusEntity = orderStatusRepository.findByName(newStatus);
         if (newStatusEntity.isEmpty()) {
             throw new InvalidStatusTransitionException("Invalid status: " + newStatus);
         }
         
-        // 4. Update the order
+        // 5. Update the order
         order.setOrder_status(newStatusEntity.get());
         orderRepository.save(order);
         
-        // 5. Return just the status (not wrapped in message/data)
+        // 6. Return just the status
         return new ApiOrderStatusDTO(newStatus);
-    }
-    
-    /**
-     * Validates if status transition is allowed
-     */
-    private boolean isValidStatusTransition(String currentStatus, String newStatus) {
-    // Current logic might be rejecting valid transitions
-    switch (currentStatus.toLowerCase()) {
-        case "pending":
-            return newStatus.equals("in_progress") || newStatus.equals("cancelled");
-        case "in_progress":
-            return newStatus.equals("delivered") || newStatus.equals("cancelled");
-        case "delivered":
-        case "cancelled":
-            return false; // Cannot change from final states
-        default:
-            return true; // Allow any transition for unknown states
-    }
     }
     
     /**

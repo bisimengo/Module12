@@ -14,6 +14,6 @@ import lombok.Setter;
 public class ApiOrderStatusDTO {
     @NotBlank(message = "Status is required")
     @Pattern(regexp = "^(pending|in_progress|delivered|cancelled)$", 
-             message = "Status must be one of: pending, in progress, delivered")
+             message = "Status must be one of: pending, in_progress, delivered, cancelled")
     private String status;
 }
