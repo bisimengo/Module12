@@ -54,7 +54,6 @@ public class RestaurantApiController {
     //  */
     @PostMapping("/api/restaurants")
     public ResponseEntity<Object> createRestaurant(@RequestBody @Valid ApiCreateRestaurantDTO restaurant, BindingResult result) {
-        // Check for validation errors first
         if (result.hasErrors()) {
             throw new BadRequestException("Invalid or missing parameters for restaurant creation");
         }        
@@ -80,7 +79,6 @@ public class RestaurantApiController {
         BindingResult result) {
         
         if (result.hasErrors()) {
-            // Create detailed validation error message
             StringBuilder errorDetails = new StringBuilder();
             result.getFieldErrors().forEach(error -> {
                 errorDetails.append(error.getField()).append(": ").append(error.getDefaultMessage()).append("; ");
@@ -97,7 +95,7 @@ public class RestaurantApiController {
                 throw new ResourceNotFoundException("Restaurant with id " + id + " not found");
             }
         } catch (ResourceNotFoundException e) {
-            throw e;  // Re-throw to be handled by GlobalExceptionHandler
+            throw e;  
         } catch (Exception e) {
             throw new BadRequestException("Error updating restaurant: " + e.getMessage());
         }

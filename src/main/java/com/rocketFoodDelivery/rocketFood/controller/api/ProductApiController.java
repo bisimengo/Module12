@@ -20,14 +20,7 @@ public class ProductApiController {
         this.productService = productService;
     }
     
-    /**
-     * Returns a list of products for a given restaurant (GET)
-     * query param is restaurant:id of the target restaurant
-     * /api/products?restaurant=1
-     *
-     * @param restaurantId The ID of the restaurant to retrieve products for.
-     * @return A list of products for the specified restaurant.
-     */
+    // GET /api/products?restaurant={restaurant_id}
     @GetMapping("/api/products")
     public ResponseEntity<Object> getProductsByRestaurantId(@RequestParam("restaurant") int restaurantId) {
         List<ApiProductDTO> products = productService.findProductsByRestaurantId(restaurantId);

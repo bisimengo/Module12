@@ -31,9 +31,8 @@ public class OrderApiController {
         this.orderService = orderService;
     }
     
-    // POST /api/order/{order_id}/status endpoint
-    // Path parameter: order id (required)
-    // Returns the new status
+    // POST /api/order/{order_id}/status 
+    
     @PostMapping("/api/order/{order_id}/status")
         public ResponseEntity<Object> updateOrderStatus(
             @PathVariable("order_id") int orderId,
@@ -44,17 +43,12 @@ public class OrderApiController {
 }
 
     // GET /api/orders
-        // ● Returns a list of orders given a user type and id
-        // ● Query parameter ‘type’: customer, restaurant or courier (required)
-        // ● Query parameter ‘id’: id of customer, restaurant or courier (required) * Not the id of the
-        // users table entry
-        // ● Example: /api/orders?type=customer&id=7
+        
    @GetMapping("/api/orders")
     public ResponseEntity<Object> getOrdersByUserTypeAndId(
         @RequestParam(value = "type", required = false) String userType,
         @RequestParam(value = "id", required = false) String userIdStr) {
 
-    // Validate required parameters
     if (userType == null || userType.trim().isEmpty()) {
         throw new BadRequestException("Invalid or missing parameters");
     }
@@ -63,12 +57,10 @@ public class OrderApiController {
         throw new BadRequestException("Invalid or missing parameters");
     }
     
-    // Validate userType values
     if (!userType.equals("customer") && !userType.equals("restaurant") && !userType.equals("courier")) {
         throw new BadRequestException("Invalid or missing parameters");
     }
     
-    // Parse and validate userId
     int userId;
     try {
         userId = Integer.parseInt(userIdStr);
@@ -87,7 +79,6 @@ public class OrderApiController {
 }
 
     // POST /api/orders
-    // Creates a new order
 
    @PostMapping("/api/orders")
     public ResponseEntity<Object> createOrder(

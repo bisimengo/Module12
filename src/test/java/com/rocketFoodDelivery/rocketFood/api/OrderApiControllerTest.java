@@ -36,7 +36,7 @@ public class OrderApiControllerTest {
     @MockBean  
     private OrderService orderService;
 
-    @Mock  // Keep this as @Mock
+    @Mock  
     private OrderRepository orderRepository;
 
     @Autowired
@@ -72,10 +72,8 @@ public class OrderApiControllerTest {
 
     @Test
     public void testCreateOrder_BadRequest() throws Exception {
-        // Invalid request body
         ApiCreateOrderDTO invalidOrder = new ApiCreateOrderDTO(0, 0, null);
         
-        // Mock service to throw BadRequestException for invalid data
         when(orderService.createOrder(any(ApiCreateOrderDTO.class)))
             .thenThrow(new BadRequestException("Invalid or missing parameters"));
         
@@ -88,7 +86,6 @@ public class OrderApiControllerTest {
 
     @Test
     public void testGetOrdersByUserTypeAndId_Success() throws Exception {
-        // Create mock order data
         List<ApiOrderDTO> mockOrders = Arrays.asList(
             createMockOrder(3, 5, "7757 Darwin Causeway, Gerlachfort, 19822", 
                            1, "Fast Pub", "5398 Quigley Harbor, North Lynelle, 60808", 
